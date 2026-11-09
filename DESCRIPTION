@@ -1,8 +1,8 @@
 Package: paradoxR
 Title: Mods for Existing R Tools
-Version: 0.0.0.9000
+Version: 26.11.0
 Authors@R: 
-    person("Michael", email = "maintainer@example.com", role = c("aut", "cre"))
+    person("catch-26", email = "59668327+catch-26@users.noreply.github.com", role = c("aut", "cre"))
 Description: Mods existing R tools so a specific job takes one call instead
     of a page of glue code. Each mod is either a drop-in replacement with the
     same call shape as the tool it replaces, or a thin wrapper that returns

@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Michael \email{maintainer@example.com}
+\strong{Maintainer}: catch-26 \email{59668327+catch-26@users.noreply.github.com}
 
 }
 \keyword{internal}
