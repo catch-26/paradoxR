@@ -1,18 +1,24 @@
-# paradoxR
+<h3 align="center">paradoxR</h3>
 
-**paradoxR mods existing R tools** so a specific job takes one call instead of a page of glue code. Each mod is either a **drop-in replacement** (same call shape as the tool it replaces) or a **thin wrapper** (data in, one specific plot out).
+<p align="center">Mods for existing R tools, so a specific job takes one call instead of a page of glue code.</p>
+
+## Install
 
 ```r
 pak::pak("catch-26/paradoxR")
 ```
 
+Requires R 4.1 or newer.
+
 ## Mods
+
+Each mod is either a **drop-in replacement** (same call shape as the tool it replaces) or a **thin wrapper** (data in, one specific plot out).
 
 | Mod | Kind | Files |
 |---|---|---|
 | **Palette family: brand** | Drop-in replacement | `R/palette-brand.R`, `R/palette-brand-data.R` |
 
-## Brand palette
+### Brand palette
 
 **One call swaps every ggplot2 default.** `use_brand_palette()` sets ggplot2's `ggplot2.discrete.*`, `ggplot2.continuous.*` and `ggplot2.binned.*` options; `reset_ggplot2_palette()` switches back.
 
@@ -47,3 +53,7 @@ reset_ggplot2_palette()
 4. **Route version quirks through `R/compat.R`**, never inline in the mod.
 5. **Test it:** `usethis::use_test("<mod>-<part>")`, with `testthat::skip_if_not_installed("<pkg>")` for Suggests packages.
 6. **Pass `devtools::check()`** with no new notes, and add one example to this README.
+
+## License
+
+Apache 2.0, see [LICENSE](LICENSE).
