@@ -1,6 +1,6 @@
 <h3 align="center">paradoxR</h3>
 
-<p align="center">Mods for existing R tools, so a specific job takes one call instead of a page of glue code.</p>
+<p align="center">Drop-in colour palettes and scales for ggplot2.</p>
 
 ## Install
 
@@ -10,15 +10,9 @@ pak::pak("catch-26/paradoxR")
 
 Requires R 4.1 or newer.
 
-## Mods
+## Palettes
 
-Each mod is either a **drop-in replacement** (same call shape as the tool it replaces) or a **thin wrapper** (data in, one specific plot out).
-
-| Mod | Kind | Files |
-|---|---|---|
-| **Palette family: brand** | Drop-in replacement | `R/palette-brand.R`, `R/palette-brand-data.R` |
-
-### Brand palette
+### Brand
 
 **One call swaps every ggplot2 default.** `use_brand_palette()` sets ggplot2's `ggplot2.discrete.*`, `ggplot2.continuous.*` and `ggplot2.binned.*` options; `reset_ggplot2_palette()` switches back.
 
@@ -44,15 +38,6 @@ reset_ggplot2_palette()
 **Sequential gradients run light (low) to dark (high)**, the opposite of ggplot2's default; `reverse = TRUE` matches ggplot2.
 
 **Regenerating the colours:** the hex codes are stored as literals in `R/palette-brand-data.R`. `source("data-raw/palette-brand.R")` rebuilds them from the 24 swatches with colorspace, dplyr and purrr.
-
-## Adding a mod
-
-1. **Name the kind:** drop-in replacement or thin wrapper.
-2. **Create the files:** `usethis::use_r("<mod>-<part>")`.
-3. **Declare dependencies:** `usethis::use_package("<pkg>", "Suggests")`, then `rlang::check_installed()` at the top of each function that uses it.
-4. **Route version quirks through `R/compat.R`**, never inline in the mod.
-5. **Test it:** `usethis::use_test("<mod>-<part>")`, with `testthat::skip_if_not_installed("<pkg>")` for Suggests packages.
-6. **Pass `devtools::check()`** with no new notes, and add one example to this README.
 
 ## License
 
