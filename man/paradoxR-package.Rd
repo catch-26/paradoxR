@@ -4,9 +4,9 @@
 \name{paradoxR-package}
 \alias{paradoxR}
 \alias{paradoxR-package}
-\title{paradoxR: Mods for Existing R Tools}
+\title{paradoxR: Drop-in Colour Palettes and Scales for 'ggplot2'}
 \description{
-Mods existing R tools so a specific job takes one call instead of a page of glue code. Each mod is either a drop-in replacement with the same call shape as the tool it replaces, or a thin wrapper that returns one specific plot. The first mod is a brand colour palette family for 'ggplot2'.
+Provides drop-in replacements for the default colour scales of 'ggplot2'. The brand palette family covers discrete, continuous, binned and diverging scales, a global switch for every plot, and helpers for gradients and single-hue ramps.
 }
 \seealso{
 Useful links:
