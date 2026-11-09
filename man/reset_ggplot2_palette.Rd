@@ -12,9 +12,9 @@ The previous option values, invisibly.
 \description{
 Clears the \verb{ggplot2.discrete.*}, \verb{ggplot2.continuous.*} and
 \verb{ggplot2.binned.*} options set by \verb{use_<palette>_palette()}, such as
-\code{\link[=use_brand_palette]{use_brand_palette()}}.
+\code{\link[=use_ember_palette]{use_ember_palette()}}.
 }
 \examples{
-use_brand_palette()
+use_ember_palette()
 reset_ggplot2_palette()
 }

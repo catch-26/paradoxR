@@ -4,7 +4,7 @@ Version: 26.11.0
 Authors@R: 
     person("catch-26", email = "59668327+catch-26@users.noreply.github.com", role = c("aut", "cre"))
 Description: Provides drop-in replacements for the default colour scales of
-    'ggplot2'. The brand palette family covers discrete, continuous, binned
+    'ggplot2'. The ember palette family covers discrete, continuous, binned
     and diverging scales, a global switch for every plot, and helpers for
     gradients and single-hue ramps.
 License: Apache License (>= 2)

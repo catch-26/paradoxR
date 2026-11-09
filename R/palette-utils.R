@@ -53,12 +53,12 @@ palette_set_options <- function(colour_d, fill_d, colour_c, fill_c, colour_b, fi
 #'
 #' Clears the `ggplot2.discrete.*`, `ggplot2.continuous.*` and
 #' `ggplot2.binned.*` options set by `use_<palette>_palette()`, such as
-#' [use_brand_palette()].
+#' [use_ember_palette()].
 #'
 #' @return The previous option values, invisibly.
 #' @export
 #' @examples
-#' use_brand_palette()
+#' use_ember_palette()
 #' reset_ggplot2_palette()
 reset_ggplot2_palette <- function() {
   new <- rlang::rep_named(palette_ggplot2_options, list(NULL))
