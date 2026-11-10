@@ -6,7 +6,7 @@
 \alias{paradoxR-package}
 \title{paradoxR: Drop-in Colour Palettes and Scales for 'ggplot2'}
 \description{
-Provides drop-in replacements for the default colour scales of 'ggplot2'. The ember palette family covers discrete, continuous, binned and diverging scales, a global switch for every plot, and helpers for gradients and single-hue ramps.
+Provides drop-in replacements for the default colour scales of 'ggplot2'. The sienna palette family covers discrete, continuous, binned and diverging scales, a global switch for every plot, and helpers for gradients and single-hue ramps.
 }
 \seealso{
 Useful links:
