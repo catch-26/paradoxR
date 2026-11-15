@@ -3,7 +3,7 @@
 \name{use_go_cache}
 \alias{use_go_cache}
 \alias{reset_go_cache}
-\title{Cache GO enrichment in clusterProfiler}
+\title{Cache and speed up GO enrichment in clusterProfiler}
 \usage{
 use_go_cache()
 
@@ -14,9 +14,10 @@ reset_go_cache()
 is not loaded yet; the change is then applied when it loads.
 }
 \description{
-Replaces two functions inside clusterProfiler so that \code{clusterProfiler::enrichGO()}
-and the functions that call it, such as \code{clusterProfiler::compareCluster()},
-reuse earlier work:
+Replaces functions inside clusterProfiler and GOSemSim so that
+\code{clusterProfiler::enrichGO()}, \code{clusterProfiler::simplify()} and the
+functions that call them, such as \code{clusterProfiler::compareCluster()},
+reuse earlier work and run faster:
 }
 \details{
 \itemize{
@@ -24,14 +25,20 @@ reuse earlier work:
 kept on disk, so a new R session reads it in under a second instead of
 querying the OrgDb again;
 \item the result of an \code{enrichGO()} call is kept, so the same gene list with the
-same settings returns at once.
+same settings returns at once;
+\item Wang semantic similarity between GO terms is computed for all term pairs
+at once instead of pair by pair, which speeds up \code{simplify()} and
+\code{enrichplot::pairwise_termsim(method = "Wang")}; results are unchanged.
 }
 
 Called automatically when paradoxR is loaded, unless
 \code{options(paradoxR.go_cache = FALSE)} is set beforehand. The cache is keyed
 by the clusterProfiler and GO.db versions and the OrgDb database file, so
-updating any of them starts a fresh cache. \code{reset_go_cache()} restores
-clusterProfiler's own functions and \code{\link[=clear_go_cache]{clear_go_cache()}} deletes the cache.
+updating any of them starts a fresh cache. The \code{simplify()} and similarity
+replacements apply only to the clusterProfiler and GOSemSim versions they
+were checked against; other versions keep their own code.
+\code{reset_go_cache()} restores the original functions and \code{\link[=clear_go_cache]{clear_go_cache()}}
+deletes the cache.
 }
 \examples{
 use_go_cache()

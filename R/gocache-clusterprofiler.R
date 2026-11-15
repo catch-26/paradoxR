@@ -1,5 +1,5 @@
 gocache_go_data <- function(OrgDb, ont, keytype, ...) {
-  original <- gocache$original$get_GO_data
+  original <- gocache_original("clusterProfiler", "get_GO_data")
   dots <- list(...)
   if (!all(vapply(dots, is.null, logical(1)))) {
     return(original(OrgDb, ont, keytype, ...))
@@ -14,7 +14,7 @@ gocache_go_data <- function(OrgDb, ont, keytype, ...) {
 }
 
 gocache_enrich_go <- function(frame) {
-  original <- gocache$original$enrichGO
+  original <- gocache_original("clusterProfiler", "enrichGO")
   arg_names <- names(formals(original))
   supplied <- arg_names[!vapply(
     arg_names,
@@ -41,7 +41,6 @@ gocache_make_enrich_go <- function(original) {
   env$gocache_enrich_go <- gocache_enrich_go
   body(wrapper) <- quote(gocache_enrich_go(environment()))
   environment(wrapper) <- env
-  attr(wrapper, "paradoxR") <- TRUE
   wrapper
 }
 
@@ -60,37 +59,97 @@ gocache_replace <- function(env, name, value) {
   invisible(TRUE)
 }
 
-gocache_targets <- function() {
-  ns <- asNamespace("clusterProfiler")
-  envs <- list(ns)
-  if ("package:clusterProfiler" %in% search()) {
-    envs <- c(envs, list(as.environment("package:clusterProfiler")))
+gocache_patches <- function() {
+  list(
+    list(pkg = "clusterProfiler", name = "get_GO_data", make = function(original) gocache_go_data),
+    list(pkg = "clusterProfiler", name = "enrichGO", make = gocache_make_enrich_go, exported = TRUE),
+    list(pkg = "clusterProfiler", name = "simplify_internal", make = function(original) gocache_simplify_internal, known_body = TRUE),
+    list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache_wang, known_body = TRUE)
+  )
+}
+
+gocache_original <- function(pkg, name) {
+  gocache$original[[paste0(pkg, "::", name)]]
+}
+
+gocache_targets <- function(pkg, exported) {
+  envs <- list(asNamespace(pkg))
+  attached <- paste0("package:", pkg)
+  if (isTRUE(exported) && attached %in% search()) {
+    envs <- c(envs, list(as.environment(attached)))
   }
   envs
 }
 
-gocache_patched <- function() {
-  isNamespaceLoaded("clusterProfiler") &&
-    isTRUE(attr(get("enrichGO", envir = asNamespace("clusterProfiler")), "paradoxR"))
+gocache_is_replacement <- function(fun) {
+  isTRUE(attr(fun, "paradoxR"))
 }
 
-#' Cache GO enrichment in clusterProfiler
+gocache_patched <- function(pkg = "clusterProfiler", name = "enrichGO") {
+  isNamespaceLoaded(pkg) &&
+    exists(name, envir = asNamespace(pkg), inherits = FALSE) &&
+    gocache_is_replacement(get(name, envir = asNamespace(pkg)))
+}
+
+gocache_apply <- function(patch) {
+  ns <- asNamespace(patch$pkg)
+  if (!exists(patch$name, envir = ns, inherits = FALSE)) {
+    return(invisible(FALSE))
+  }
+  original <- get(patch$name, envir = ns)
+  if (gocache_is_replacement(original)) {
+    return(invisible(TRUE))
+  }
+  if (isTRUE(patch$known_body) && !compat_body_is_known(patch$pkg, patch$name, original)) {
+    return(invisible(FALSE))
+  }
+  if (is.null(gocache$original)) {
+    gocache$original <- list()
+  }
+  gocache$original[[paste0(patch$pkg, "::", patch$name)]] <- original
+  replacement <- patch$make(original)
+  attr(replacement, "paradoxR") <- TRUE
+  for (env in gocache_targets(patch$pkg, patch$exported)) {
+    gocache_replace(env, patch$name, replacement)
+  }
+  invisible(TRUE)
+}
+
+gocache_revert <- function(patch) {
+  if (!gocache_patched(patch$pkg, patch$name)) {
+    return(invisible(FALSE))
+  }
+  original <- gocache_original(patch$pkg, patch$name)
+  for (env in gocache_targets(patch$pkg, patch$exported)) {
+    gocache_replace(env, patch$name, original)
+  }
+  invisible(TRUE)
+}
+
+#' Cache and speed up GO enrichment in clusterProfiler
 #'
-#' Replaces two functions inside clusterProfiler so that `clusterProfiler::enrichGO()`
-#' and the functions that call it, such as `clusterProfiler::compareCluster()`,
-#' reuse earlier work:
+#' Replaces functions inside clusterProfiler and GOSemSim so that
+#' `clusterProfiler::enrichGO()`, `clusterProfiler::simplify()` and the
+#' functions that call them, such as `clusterProfiler::compareCluster()`,
+#' reuse earlier work and run faster:
 #'
 #' * the GO annotation for an OrgDb, ontology and key type is built once and
 #'   kept on disk, so a new R session reads it in under a second instead of
 #'   querying the OrgDb again;
 #' * the result of an `enrichGO()` call is kept, so the same gene list with the
-#'   same settings returns at once.
+#'   same settings returns at once;
+#' * Wang semantic similarity between GO terms is computed for all term pairs
+#'   at once instead of pair by pair, which speeds up `simplify()` and
+#'   `enrichplot::pairwise_termsim(method = "Wang")`; results are unchanged.
 #'
 #' Called automatically when paradoxR is loaded, unless
 #' `options(paradoxR.go_cache = FALSE)` is set beforehand. The cache is keyed
 #' by the clusterProfiler and GO.db versions and the OrgDb database file, so
-#' updating any of them starts a fresh cache. `reset_go_cache()` restores
-#' clusterProfiler's own functions and [clear_go_cache()] deletes the cache.
+#' updating any of them starts a fresh cache. The `simplify()` and similarity
+#' replacements apply only to the clusterProfiler and GOSemSim versions they
+#' were checked against; other versions keep their own code.
+#' `reset_go_cache()` restores the original functions and [clear_go_cache()]
+#' deletes the cache.
 #'
 #' @return `TRUE` invisibly when clusterProfiler was changed, `FALSE` when it
 #'   is not loaded yet; the change is then applied when it loads.
@@ -99,41 +158,31 @@ gocache_patched <- function() {
 #' use_go_cache()
 #' reset_go_cache()
 use_go_cache <- function() {
-  if (!isNamespaceLoaded("clusterProfiler")) {
-    if (!isTRUE(gocache$hooked)) {
-      setHook(packageEvent("clusterProfiler", "onLoad"), gocache_on_load)
-      gocache$hooked <- TRUE
+  if (is.null(gocache$hooked)) {
+    gocache$hooked <- character()
+  }
+  for (pkg in unique(vapply(gocache_patches(), `[[`, character(1), "pkg"))) {
+    if (!isNamespaceLoaded(pkg) && !pkg %in% gocache$hooked) {
+      setHook(packageEvent(pkg, "onLoad"), gocache_on_load)
+      gocache$hooked <- c(gocache$hooked, pkg)
     }
-    return(invisible(FALSE))
   }
-  if (gocache_patched()) {
-    return(invisible(TRUE))
+  for (patch in gocache_patches()) {
+    if (isNamespaceLoaded(patch$pkg)) {
+      gocache_apply(patch)
+    }
   }
-  ns <- asNamespace("clusterProfiler")
-  gocache$original <- list(
-    get_GO_data = get("get_GO_data", envir = ns),
-    enrichGO = get("enrichGO", envir = ns)
-  )
-  enrich_go <- gocache_make_enrich_go(gocache$original$enrichGO)
-  gocache_replace(ns, "get_GO_data", gocache_go_data)
-  for (env in gocache_targets()) {
-    gocache_replace(env, "enrichGO", enrich_go)
-  }
-  invisible(TRUE)
+  invisible(gocache_patched())
 }
 
 #' @rdname use_go_cache
 #' @export
 reset_go_cache <- function() {
-  if (!gocache_patched()) {
-    return(invisible(FALSE))
+  changed <- FALSE
+  for (patch in gocache_patches()) {
+    changed <- isTRUE(gocache_revert(patch)) || changed
   }
-  ns <- asNamespace("clusterProfiler")
-  gocache_replace(ns, "get_GO_data", gocache$original$get_GO_data)
-  for (env in gocache_targets()) {
-    gocache_replace(env, "enrichGO", gocache$original$enrichGO)
-  }
-  invisible(TRUE)
+  invisible(changed)
 }
 
 gocache_on_load <- function(...) {

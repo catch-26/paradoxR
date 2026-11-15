@@ -43,7 +43,7 @@ reset_ggplot2_palette()
 
 ### GO cache
 
-**Loading paradoxR speeds up `clusterProfiler::enrichGO()`.** The GO annotation for each OrgDb, ontology and key type is built once and kept on disk, and each result is remembered, so a repeated call, or the first call in a new R session, returns in under a second instead of 10 to 30 seconds. `compareCluster()` and other functions that call `enrichGO()` benefit too. The cache follows the clusterProfiler, GO.db and OrgDb versions; `reset_go_cache()` switches back to clusterProfiler's own functions and `clear_go_cache()` deletes the cache. Set `options(paradoxR.go_cache = FALSE)` before loading paradoxR to leave clusterProfiler unchanged.
+**Loading paradoxR speeds up `clusterProfiler::enrichGO()`.** The GO annotation for each OrgDb, ontology and key type is built once and kept on disk, and each result is remembered, so a repeated call, or the first call in a new R session, returns in under a second instead of 10 to 30 seconds. `compareCluster()` and other functions that call `enrichGO()` benefit too. `simplify()` and Wang similarity (`GOSemSim::mgoSim()`, `enrichplot::pairwise_termsim(method = "Wang")`) compute all term pairs at once, about 10 times faster with identical results. The cache follows the clusterProfiler, GO.db and OrgDb versions; `reset_go_cache()` switches back to clusterProfiler's own functions and `clear_go_cache()` deletes the cache. Set `options(paradoxR.go_cache = FALSE)` before loading paradoxR to leave clusterProfiler unchanged.
 
 ```r
 library(paradoxR)

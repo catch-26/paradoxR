@@ -24,6 +24,7 @@ Suggests:
     clusterProfiler,
     colorspace,
     GO.db,
+    GOSemSim,
     methods,
     org.Hs.eg.db,
     testthat (>= 3.0.0)
