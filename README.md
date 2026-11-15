@@ -64,7 +64,7 @@ reset_ggplot2_palette()
 
 **Fallback to the original functions:** paradoxR replaces an upstream function only when the installed code is a version that paradoxR was verified against. For all other versions, the original function runs. When a replacement fails, the original function runs for that call and paradoxR shows one warning.
 
-**Bioconductor 3.23:** the disk caches, `simplify()`, Wang similarity and information content are sped up; cutoff reuse currently uses the original functions.
+**Bioconductor 3.22 and 3.23:** all speed-ups are active. On 3.23, a rerun with other cutoffs uses the original function, because it takes only about 0.5 s there.
 
 | Control | Effect |
 |---|---|
