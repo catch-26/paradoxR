@@ -7,7 +7,7 @@ gocache_go_data <- function(OrgDb, ont, keytype, ...) {
   key <- gocache_key("go-data", gocache_orgdb_id(OrgDb), ont, keytype)
   value <- gocache_get(key)
   if (is.null(value)) {
-    value <- original(OrgDb, ont, keytype, ...)
+    value <- gocache_fast_go_data(original)(OrgDb, ont, keytype, ...)
     gocache_set(key, value)
   }
   value
@@ -140,7 +140,10 @@ gocache_revert <- function(patch) {
 #'   same settings returns at once;
 #' * Wang semantic similarity between GO terms is computed for all term pairs
 #'   at once instead of pair by pair, which speeds up `simplify()` and
-#'   `enrichplot::pairwise_termsim(method = "Wang")`; results are unchanged.
+#'   `enrichplot::pairwise_termsim(method = "Wang")`; results are unchanged;
+#' * the first GO annotation for an OrgDb is read with one SQL query per
+#'   ontology table instead of `AnnotationDbi::mapIds()`; the result is
+#'   identical.
 #'
 #' Called automatically when paradoxR is loaded, unless
 #' `options(paradoxR.go_cache = FALSE)` is set beforehand. The cache is keyed

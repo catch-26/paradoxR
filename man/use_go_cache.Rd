@@ -28,7 +28,10 @@ querying the OrgDb again;
 same settings returns at once;
 \item Wang semantic similarity between GO terms is computed for all term pairs
 at once instead of pair by pair, which speeds up \code{simplify()} and
-\code{enrichplot::pairwise_termsim(method = "Wang")}; results are unchanged.
+\code{enrichplot::pairwise_termsim(method = "Wang")}; results are unchanged;
+\item the first GO annotation for an OrgDb is read with one SQL query per
+ontology table instead of \code{AnnotationDbi::mapIds()}; the result is
+identical.
 }
 
 Called automatically when paradoxR is loaded, unless

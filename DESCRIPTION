@@ -23,6 +23,7 @@ Suggests:
     AnnotationDbi,
     clusterProfiler,
     colorspace,
+    DBI,
     GO.db,
     GOSemSim,
     methods,
