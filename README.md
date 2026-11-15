@@ -43,11 +43,24 @@ reset_ggplot2_palette()
 
 **Loading paradoxR makes clusterProfiler, DOSE and GOSemSim faster, with results identical to the original functions.** You do not change your code.
 
-- **GO annotation cache:** `clusterProfiler::enrichGO()`, `clusterProfiler::gseGO()` and `clusterProfiler::groupGO()` build the GO annotation for each OrgDb, ontology and key type one time and keep it on disk. paradoxR reads the OrgDb with SQL, so this first build is 3 to 5 times faster.
-- **Result reuse:** paradoxR keeps each `clusterProfiler::enrichGO()` result on disk. A repeated call, also in a new R session, returns in under a second instead of 10 to 30 seconds. A call with other p-value or q-value cutoffs returns at once.
-- **simplify and Wang similarity:** `clusterProfiler::simplify()`, `GOSemSim::mgoSim()` and `enrichplot::pairwise_termsim(method = "Wang")` calculate all term pairs at one time, about 10 times faster.
-- **Information content:** `GOSemSim::godata()` calculates information content for BP in about 5 seconds instead of 24.
+- **GO annotation:** `clusterProfiler::enrichGO()`, `clusterProfiler::gseGO()` and `clusterProfiler::groupGO()` build the GO annotation for each OrgDb, ontology and key type one time and keep it on disk. paradoxR reads the OrgDb with SQL, so this build is faster.
+- **Result reuse:** paradoxR keeps each `clusterProfiler::enrichGO()` result on disk. A call with other p-value or q-value cutoffs returns at once.
+- **simplify and Wang similarity:** `clusterProfiler::simplify()`, `GOSemSim::mgoSim()` and `enrichplot::pairwise_termsim(method = "Wang")` calculate all term pairs at one time.
+- **Information content:** `GOSemSim::godata()` calculates information content in one vectorised step.
 - **KEGG download cache:** `clusterProfiler::enrichKEGG()`, `clusterProfiler::gseKEGG()`, `clusterProfiler::enrichMKEGG()` and `clusterProfiler::gseMKEGG()` download each KEGG table one time and keep it on disk for all species, key types and sessions. paradoxR compares the cache with the KEGG release dates at most one time each hour and downloads again when KEGG changes. When KEGG is not available, paradoxR uses the cached tables.
+
+**First-call times,** original function against paradoxR, with identical results:
+
+| Call | Bioconductor | Original | paradoxR | Speed-up |
+|---|---|---|---|---|
+| `clusterProfiler::simplify()`, Wang, 732 BP terms | 3.23 | 55.3 s | 3.1 s | 18x |
+| Wang similarity, all term pairs | 3.23 | 32.4 s | 0.69 s | 47x |
+| `enrichplot::pairwise_termsim(method = "Wang")` | 3.23 | 2.2 s | 0.16 s | 14x |
+| `clusterProfiler::enrichGO()`, BP, new gene list | 3.23 | 14.8 s | 0.54 s | 27x |
+| `GOSemSim::godata(ont = "BP", computeIC = TRUE)` | 3.23 | 30 s | 7 s | 4x |
+| GO annotation build, BP, ENTREZID | 3.22 | 23.1 s | 6.8 s | 3x |
+| GO annotation build, MF, ENTREZID | 3.22 | 9.2 s | 1.8 s | 5x |
+| GO annotation build, all ontologies, ENSEMBL | 3.22 | 47.0 s | 9.3 s | 5x |
 
 **Fallback to the original functions:** paradoxR replaces an upstream function only when the installed code is a version that paradoxR was verified against. For all other versions, the original function runs. When a replacement fails, the original function runs for that call and paradoxR shows one warning.
 
@@ -63,19 +76,16 @@ reset_ggplot2_palette()
 
 ```r
 library(paradoxR)
-if (requireNamespace("clusterProfiler", quietly = TRUE) && requireNamespace("org.Hs.eg.db", quietly = TRUE)) {
-  genes <- AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = "ENTREZID")[1:300]
-  clusterProfiler::enrichGO(genes, org.Hs.eg.db::org.Hs.eg.db, ont = "MF")
-}
+genes <- AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = "ENTREZID")[1:300]
+ego <- clusterProfiler::enrichGO(genes, org.Hs.eg.db::org.Hs.eg.db, ont = "BP")
+ego_simple <- clusterProfiler::simplify(ego)
 ```
 
 ```r
 library(paradoxR)
-if (requireNamespace("clusterProfiler", quietly = TRUE) && requireNamespace("DOSE", quietly = TRUE)) {
-  data(geneList, package = "DOSE")
-  genes <- names(geneList)[abs(geneList) > 2]
-  clusterProfiler::enrichKEGG(genes, organism = "hsa")
-}
+data(geneList, package = "DOSE")
+genes <- names(geneList)[abs(geneList) > 2]
+kk <- clusterProfiler::enrichKEGG(genes, organism = "hsa")
 ```
 
 ## License
