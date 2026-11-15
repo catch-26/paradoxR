@@ -37,7 +37,9 @@ reset_ggplot2_palette()
 
 **Sequential gradients run light (low) to dark (high)**, the opposite of ggplot2's default; `reverse = TRUE` matches ggplot2.
 
-**Regenerating the colours:** the hex codes are stored as literals in `R/palette-sienna-data.R`. `source("data-raw/palette-sienna.R")` rebuilds them from the 24 s## Enrichment
+**Regenerating the colours:** the hex codes are stored as literals in `R/palette-sienna-data.R`. `source("data-raw/palette-sienna.R")` rebuilds them from the 24 swatches with colorspace, dplyr and purrr.
+
+## Enrichment
 
 **Loading paradoxR makes clusterProfiler, DOSE and GOSemSim faster, with results identical to the original functions.** You do not change your code.
 
@@ -73,10 +75,6 @@ if (requireNamespace("clusterProfiler", quietly = TRUE) && requireNamespace("DOS
   data(geneList, package = "DOSE")
   genes <- names(geneList)[abs(geneList) > 2]
   clusterProfiler::enrichKEGG(genes, organism = "hsa")
-}
-```
-
-enrichKEGG(genes, organism = "hsa")
 }
 ```
 
