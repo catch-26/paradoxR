@@ -1,6 +1,6 @@
 <h3 align="center">paradoxR</h3>
 
-<p align="center">Drop-in colour palettes and scales for ggplot2.</p>
+<p align="center">Drop-in colour palettes for ggplot2 and faster GO and KEGG enrichment for clusterProfiler.</p>
 
 ## Install
 
@@ -37,13 +37,27 @@ reset_ggplot2_palette()
 
 **Sequential gradients run light (low) to dark (high)**, the opposite of ggplot2's default; `reverse = TRUE` matches ggplot2.
 
-**Regenerating the colours:** the hex codes are stored as literals in `R/palette-sienna-data.R`. `source("data-raw/palette-sienna.R")` rebuilds them from the 24 swatches with colorspace, dplyr and purrr.
+**Regenerating the colours:** the hex codes are stored as literals in `R/palette-sienna-data.R`. `source("data-raw/palette-sienna.R")` rebuilds them from the 24 s## Enrichment
 
-## Enrichment
+**Loading paradoxR makes clusterProfiler, DOSE and GOSemSim faster, with results identical to the original functions.** You do not change your code.
 
-### GO cache
+- **GO annotation cache:** `clusterProfiler::enrichGO()`, `clusterProfiler::gseGO()` and `clusterProfiler::groupGO()` build the GO annotation for each OrgDb, ontology and key type one time and keep it on disk. paradoxR reads the OrgDb with SQL, so this first build is 3 to 5 times faster.
+- **Result reuse:** paradoxR keeps each `clusterProfiler::enrichGO()` result on disk. A repeated call, also in a new R session, returns in under a second instead of 10 to 30 seconds. A call with other p-value or q-value cutoffs returns at once.
+- **simplify and Wang similarity:** `clusterProfiler::simplify()`, `GOSemSim::mgoSim()` and `enrichplot::pairwise_termsim(method = "Wang")` calculate all term pairs at one time, about 10 times faster.
+- **Information content:** `GOSemSim::godata()` calculates information content for BP in about 5 seconds instead of 24.
+- **KEGG download cache:** `clusterProfiler::enrichKEGG()`, `clusterProfiler::gseKEGG()`, `clusterProfiler::enrichMKEGG()` and `clusterProfiler::gseMKEGG()` download each KEGG table one time and keep it on disk for all species, key types and sessions. paradoxR compares the cache with the KEGG release dates at most one time each hour and downloads again when KEGG changes. When KEGG is not available, paradoxR uses the cached tables.
 
-**Loading paradoxR speeds up `clusterProfiler::enrichGO()`.** The GO annotation for each OrgDb, ontology and key type is built once and kept on disk, and each result is remembered, so a repeated call, or the first call in a new R session, returns in under a second instead of 10 to 30 seconds. `compareCluster()` and other functions that call `enrichGO()` benefit too. `simplify()` and Wang similarity (`GOSemSim::mgoSim()`, `enrichplot::pairwise_termsim(method = "Wang")`) compute all term pairs at once, about 10 times faster with identical results. The cache follows the clusterProfiler, GO.db and OrgDb versions; `reset_go_cache()` switches back to clusterProfiler's own functions and `clear_go_cache()` deletes the cache. Set `options(paradoxR.go_cache = FALSE)` before loading paradoxR to leave clusterProfiler unchanged.
+**Fallback to the original functions:** paradoxR replaces an upstream function only when the installed code is a version that paradoxR was verified against. For all other versions, the original function runs. When a replacement fails, the original function runs for that call and paradoxR shows one warning.
+
+**Bioconductor 3.23:** the disk caches work, but simplify, Wang similarity, information content and cutoff reuse currently use the original functions.
+
+| Control | Effect |
+|---|---|
+| `reset_go_cache()` | Restores the original functions. |
+| `use_go_cache()` | Applies the faster functions again. |
+| `clear_go_cache()` | Deletes the GO and KEGG cache. |
+| `options(paradoxR.go_cache = FALSE)` | Set before loading paradoxR to keep the original functions. |
+| `options(paradoxR.go_cache_dir = )` | Sets the cache directory. The default is `tools::R_user_dir("paradoxR", "cache")`. |
 
 ```r
 library(paradoxR)
@@ -53,16 +67,16 @@ if (requireNamespace("clusterProfiler", quietly = TRUE) && requireNamespace("org
 }
 ```
 
-### KEGG cache
-
-**Loading paradoxR also caches KEGG downloads.** `clusterProfiler::enrichKEGG()`, `gseKEGG()`, `enrichMKEGG()` and `gseMKEGG()` download pathway, module and ID conversion tables from the KEGG REST API on every new R session and whenever the species or key type changes. With paradoxR loaded each table is downloaded once, kept on disk, and reused across species, key types and sessions, so a call that took about 5 seconds returns in about 1. The cache is checked against KEGG's release dates once an hour and refreshed when KEGG updates, so results match a fresh download; when KEGG is unreachable, the cached tables are used. `reset_go_cache()` and `clear_go_cache()` cover the KEGG cache too.
-
 ```r
 library(paradoxR)
 if (requireNamespace("clusterProfiler", quietly = TRUE) && requireNamespace("DOSE", quietly = TRUE)) {
   data(geneList, package = "DOSE")
   genes <- names(geneList)[abs(geneList) > 2]
   clusterProfiler::enrichKEGG(genes, organism = "hsa")
+}
+```
+
+enrichKEGG(genes, organism = "hsa")
 }
 ```
 
