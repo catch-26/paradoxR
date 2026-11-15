@@ -52,6 +52,10 @@ compat_ports <- list(
     fingerprint = "a18168a3dd8ba96dd40c0c9c7ef19c18",
     versions = list(c(GOSemSim = "2.38.3"))
   ),
+  "bioc323-offspring-idx" = list(
+    fingerprint = "c5af08e67d404358c0314b7525055a38",
+    versions = list(c(GOSemSim = "2.38.3"))
+  ),
   "bioc322-getgodata-sql" = list(
     fingerprint = "6e8f2f19066acebe25a238d44533ce74",
     versions = list(c(clusterProfiler = "4.18.4", AnnotationDbi = "1.72.0"))

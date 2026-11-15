@@ -87,6 +87,7 @@ gocache_patches <- function() {
     list(pkg = "clusterProfiler", name = "simplify_internal", make = function(original) gocache323_simplify_internal, port = "bioc323-simplify"),
     list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache_wang, port = "bioc322-wang"),
     list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache323_wang, port = "bioc323-wang"),
+    list(pkg = "GOSemSim", name = "getOffspringIdx", make = function(original) gocache323_offspring_idx, port = "bioc323-offspring-idx"),
     list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache_compute_ic, port = "bioc322-computeic"),
     list(pkg = "clusterProfiler", name = "kegg_rest", make = function(original) gocache_kegg_rest, fallback = FALSE),
     list(pkg = "DOSE", name = "enricher_internal", make = gocache_make_enricher, port = "bioc322-enricher"),

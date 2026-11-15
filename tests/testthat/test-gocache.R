@@ -188,3 +188,15 @@ test_that("fingerprints follow the function code, not its source text", {
   expect_false(compat_port_applies("no-such-port", f))
   expect_false(compat_port_applies("bioc322-wang", NULL))
 })
+
+testthat::test_that("the offspring index matches a per-term lookup", {
+  off <- list(a = c("b", "c", "z"), b = "c", c = NA_character_, d = c("a", "a"))
+  goids <- c("a", "b", "c", "d", "e")
+  pos <- stats::setNames(seq_along(goids), goids)
+  expected <- lapply(goids, function(id) {
+    ids <- off[[id]]
+    if (is.null(ids)) integer(0) else as.integer(stats::na.omit(pos[ids]))
+  })
+  names(expected) <- goids
+  testthat::expect_identical(gocache323_offspring_index(off, goids), expected)
+})

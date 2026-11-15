@@ -11,3 +11,4 @@
 - Enrichment: rerunning `clusterProfiler::enrichGO()` on the same genes with other p-value or q-value cutoffs returns at once, and other gene set sizes or adjustment methods take under a second. If a sped-up function fails, the original runs instead.
 - Enrichment: unloading paradoxR restores the original clusterProfiler, DOSE and GOSemSim functions, and reloading it in the same session no longer breaks `reset_go_cache()`.
 - Enrichment: the faster `simplify()` and Wang similarity also work with Bioconductor 3.23 (clusterProfiler 4.20, GOSemSim 2.38).
+- Enrichment: `GOSemSim::godata(computeIC = TRUE)` on Bioconductor 3.23 calculates information content for BP in about 7 seconds instead of 30.
