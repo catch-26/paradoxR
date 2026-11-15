@@ -108,3 +108,32 @@ gocache_fast_go_data <- function(original) {
   environment(fast) <- env
   fast
 }
+
+gocache_compute_ic <- function(goAnno, ont) {
+  gosemsim <- asNamespace("GOSemSim")
+  if (!exists(".GOSemSimEnv", envir = .GlobalEnv)) {
+    get(".initial", envir = gosemsim)()
+  }
+  gotbl <- get("gotbl", envir = get(".GOSemSimEnv", envir = .GlobalEnv))
+  goids <- unique(gotbl[gotbl$Ontology == ont, "go_id"])
+  counted <- table(goAnno$GO)
+  gocount <- as.vector(counted)
+  names(gocount) <- names(counted)
+  missing_ids <- setdiff(goids, names(counted))
+  zeros <- double(length(missing_ids))
+  names(zeros) <- missing_ids
+  gocount <- c(gocount, zeros)
+  offsprings <- get("getOffsprings", envir = gosemsim)(ont)
+  offsprings <- offsprings[match(goids, names(offsprings))]
+  parent <- rep(seq_along(goids), lengths(offsprings))
+  child <- gocount[unlist(offsprings, use.names = FALSE)]
+  keep <- !is.na(child)
+  offspring_count <- vapply(
+    split(unname(child[keep]), factor(parent[keep], levels = seq_along(goids))),
+    sum,
+    numeric(1)
+  )
+  cnt <- gocount[goids] + offspring_count
+  names(cnt) <- goids
+  -log(cnt / sum(gocount))
+}

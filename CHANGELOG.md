@@ -6,3 +6,4 @@
 - Enrichment: loading paradoxR makes `clusterProfiler::enrichGO()` keep its GO annotation on disk and remember each result, so repeated and later-session calls return in under a second. `reset_go_cache()` switches back and `clear_go_cache()` deletes the cache.
 - Enrichment: with paradoxR loaded, `clusterProfiler::simplify()` and Wang similarity in GOSemSim and enrichplot run about 10 times faster with identical results.
 - Enrichment: the first `enrichGO()`, `gseGO()` or `groupGO()` call for an OrgDb builds its GO annotation 3 to 5 times faster, with identical results.
+- Enrichment: `GOSemSim::godata()` computes information content for BP in about 5 s instead of 24 s, with identical results.

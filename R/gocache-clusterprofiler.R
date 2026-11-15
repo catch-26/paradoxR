@@ -64,7 +64,8 @@ gocache_patches <- function() {
     list(pkg = "clusterProfiler", name = "get_GO_data", make = function(original) gocache_go_data),
     list(pkg = "clusterProfiler", name = "enrichGO", make = gocache_make_enrich_go, exported = TRUE),
     list(pkg = "clusterProfiler", name = "simplify_internal", make = function(original) gocache_simplify_internal, known_body = TRUE),
-    list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache_wang, known_body = TRUE)
+    list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache_wang, known_body = TRUE),
+    list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache_compute_ic, known_body = TRUE)
   )
 }
 
@@ -142,8 +143,9 @@ gocache_revert <- function(patch) {
 #'   at once instead of pair by pair, which speeds up `simplify()` and
 #'   `enrichplot::pairwise_termsim(method = "Wang")`; results are unchanged;
 #' * the first GO annotation for an OrgDb is read with one SQL query per
-#'   ontology table instead of `AnnotationDbi::mapIds()`; the result is
-#'   identical.
+#'   ontology table instead of `AnnotationDbi::mapIds()`, and information
+#'   content in `GOSemSim::godata()` is summed over all terms at once; the
+#'   results are identical.
 #'
 #' Called automatically when paradoxR is loaded, unless
 #' `options(paradoxR.go_cache = FALSE)` is set beforehand. The cache is keyed

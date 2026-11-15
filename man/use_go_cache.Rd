@@ -30,8 +30,9 @@ same settings returns at once;
 at once instead of pair by pair, which speeds up \code{simplify()} and
 \code{enrichplot::pairwise_termsim(method = "Wang")}; results are unchanged;
 \item the first GO annotation for an OrgDb is read with one SQL query per
-ontology table instead of \code{AnnotationDbi::mapIds()}; the result is
-identical.
+ontology table instead of \code{AnnotationDbi::mapIds()}, and information
+content in \code{GOSemSim::godata()} is summed over all terms at once; the
+results are identical.
 }
 
 Called automatically when paradoxR is loaded, unless

@@ -21,7 +21,8 @@ compat_body_hash <- function(fun) {
 
 compat_known_bodies <- list(
   "clusterProfiler::simplify_internal" = "3d981b3983d28991df0727112ad06298",
-  "GOSemSim::wangMethod" = "10ef1581c9a8090b8eecdf118d3ef0ec"
+  "GOSemSim::wangMethod" = "10ef1581c9a8090b8eecdf118d3ef0ec",
+  "GOSemSim::computeIC" = "9c38a4afc249a0cf0abc85f678d1a9e1"
 )
 
 compat_body_is_known <- function(pkg, name, fun) {

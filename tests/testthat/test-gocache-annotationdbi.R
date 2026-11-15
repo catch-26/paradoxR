@@ -41,6 +41,24 @@ test_that("get_GO_data() builds the same GO data with the SQL lookup", {
   expect_identical(build(fast), build(original))
 })
 
+test_that("information content matches GOSemSim", {
+  testthat::skip_if_not_installed("GOSemSim")
+  testthat::skip_if_not_installed("org.Hs.eg.db")
+  original <- get("computeIC", envir = asNamespace("GOSemSim"))
+  if (gocache_is_replacement(original)) {
+    original <- gocache_original("GOSemSim", "computeIC")
+  }
+  annotation <- AnnotationDbi::select(
+    org.Hs.eg.db::org.Hs.eg.db,
+    keys = AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = "ENTREZID")[1:2000],
+    keytype = "ENTREZID",
+    columns = c("GO", "ONTOLOGY")
+  ) |>
+    suppressMessages()
+  annotation <- annotation[!is.na(annotation$GO) & annotation$ONTOLOGY == "MF", ]
+  expect_identical(gocache_compute_ic(annotation, "MF"), original(annotation, "MF"))
+})
+
 test_that("the data frame unique() keeps the same rows and row names", {
   x <- data.frame(a = c("x", "y", "x", NA, NA), b = c(1, 2, 1, 3, 3), c = c("p", "q", "p", "r", "r"))
   expect_identical(gocache_unique(x), unique(x))
