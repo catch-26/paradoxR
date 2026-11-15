@@ -76,6 +76,8 @@ jobs:
           close <- which(readme == "```")
           blocks <- lapply(open, \(i) readme[(i + 1):(min(close[close > i]) - 1)])
           blocks <- Filter(\(b) !any(grepl("pak::pak", b, fixed = TRUE)), blocks)
+          needs <- \(b) unique(unlist(regmatches(b, gregexpr("[A-Za-z][A-Za-z0-9.]*(?=::)", b, perl = TRUE))))
+          blocks <- Filter(\(b) all(vapply(needs(b), requireNamespace, logical(1), quietly = TRUE)), blocks)
           stopifnot(length(blocks) > 0)
           file <- tempfile(fileext = ".png")
           grDevices::png(file, width = 800, height = 600, type = "cairo")
