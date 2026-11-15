@@ -86,7 +86,7 @@ gocache_patches <- function() {
     list(pkg = "clusterProfiler", name = "simplify_internal", make = function(original) gocache_simplify_internal, known_body = TRUE),
     list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache_wang, known_body = TRUE),
     list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache_compute_ic, known_body = TRUE),
-    list(pkg = "clusterProfiler", name = "kegg_rest", make = function(original) gocache_kegg_rest),
+    list(pkg = "clusterProfiler", name = "kegg_rest", make = function(original) gocache_kegg_rest, fallback = FALSE),
     list(pkg = "DOSE", name = "enricher_internal", make = gocache_make_enricher, known_body = TRUE),
     list(pkg = "clusterProfiler", name = "enricher_internal", make = gocache_make_enricher, known_body = TRUE)
   )
@@ -132,7 +132,7 @@ gocache_apply <- function(patch) {
   }
   gocache$original[[paste0(patch$pkg, "::", patch$name)]] <- original
   replacement <- patch$make(original)
-  if (!isTRUE(patch$exported)) {
+  if (!isTRUE(patch$exported) && !identical(patch$fallback, FALSE)) {
     replacement <- gocache_with_fallback(replacement, original, paste0(patch$pkg, ":::", patch$name))
   }
   attr(replacement, "paradoxR") <- TRUE
