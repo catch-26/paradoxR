@@ -13,3 +13,4 @@
 - Enrichment: the faster `simplify()` and Wang similarity also work with Bioconductor 3.23 (clusterProfiler 4.20, GOSemSim 2.38).
 - Enrichment: `GOSemSim::godata(computeIC = TRUE)` on Bioconductor 3.23 calculates information content for BP in about 7 seconds instead of 30.
 - Enrichment: on Bioconductor 3.23, rerunning `clusterProfiler::enrichGO()` on the same genes with other p-value or q-value cutoffs also returns at once.
+- Enrichment: on Bioconductor 3.23, the first `clusterProfiler::enrichGO()` call for an OrgDb builds the GO annotation with SQL, about 8 times faster for BP.

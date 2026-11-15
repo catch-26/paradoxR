@@ -64,6 +64,10 @@ compat_ports <- list(
     fingerprint = "9dcbc3f1c90970df00fa41bde793aded",
     versions = list(c(clusterProfiler = "4.20.3", enrichit = "0.2.7"))
   ),
+  "bioc323-getgodata-sql" = list(
+    fingerprint = "4f0b93dc27b6947324cea4858a04793c",
+    versions = list(c(clusterProfiler = "4.20.3", AnnotationDbi = "1.74.0"))
+  ),
   "bioc322-getgodata-sql" = list(
     fingerprint = "6e8f2f19066acebe25a238d44533ce74",
     versions = list(c(clusterProfiler = "4.18.4", AnnotationDbi = "1.72.0"))

@@ -30,14 +30,18 @@ test_that("get_GO_data() builds the same GO data with the SQL lookup", {
   if (gocache_is_replacement(original)) {
     original <- gocache_original("clusterProfiler", "get_GO_data")
   }
-  testthat::skip_if_not(compat_port_applies("bioc322-getgodata-sql", original), "port not verified for these versions")
+  testthat::skip_if_not(
+    compat_port_applies("bioc322-getgodata-sql", original) || compat_port_applies("bioc323-getgodata-sql", original),
+    "port not verified for these versions"
+  )
   fast <- gocache_fast_go_data(original)
   expect_false(identical(body(fast), body(original)))
   build <- function(fun) {
     if (exists(".GO_clusterProfiler_Env", envir = .GlobalEnv)) {
       rm(".GO_clusterProfiler_Env", envir = .GlobalEnv)
     }
-    as.list(fun(org.Hs.eg.db::org.Hs.eg.db, "CC", "SYMBOL"), all.names = TRUE, sorted = TRUE)
+    value <- fun(org.Hs.eg.db::org.Hs.eg.db, "CC", "SYMBOL")
+    if (is.environment(value)) as.list(value, all.names = TRUE, sorted = TRUE) else value
   }
   expect_identical(build(fast), build(original))
 })
