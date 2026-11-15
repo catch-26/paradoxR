@@ -64,6 +64,9 @@ gocache_wang <- function(t1, t2, ont) {
     return(original(t1, t2, ont))
   }
   terms <- unique(c(t1, t2))
+  if (anyNA(terms) || "all" %in% terms) {
+    return(original(t1, t2, ont))
+  }
   svs <- gocache_sv(terms, ont)
   unusable <- vapply(svs, function(sv) all(is.na(sv)), logical(1))
   ancestors <- unique(unlist(lapply(svs, names), use.names = FALSE))

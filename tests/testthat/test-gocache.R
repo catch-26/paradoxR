@@ -96,3 +96,20 @@ test_that("KEGG tables are cached per release and reused offline", {
   expect_identical(calls, 2L)
   expect_identical(clear_go_cache(), 1L)
 })
+
+test_that("cached GO data stays separate per ontology across calls", {
+  testthat::skip_if_not_installed("clusterProfiler")
+  testthat::skip_if_not_installed("org.Hs.eg.db")
+  dir <- tempfile("gocache")
+  old <- options(paradoxR.go_cache_dir = dir)
+  on.exit({ options(old); unlink(dir, recursive = TRUE) }, add = TRUE)
+  use_go_cache()
+  get_go_data <- get("get_GO_data", envir = asNamespace("clusterProfiler"))
+  db <- org.Hs.eg.db::org.Hs.eg.db
+  bp <- get_go_data(db, "BP", "ENTREZID")
+  bp_terms <- names(get("PATHID2EXTID", envir = bp))
+  mf <- get_go_data(db, "MF", "ENTREZID")
+  bp_again <- get_go_data(db, "BP", "ENTREZID")
+  expect_identical(names(get("PATHID2EXTID", envir = bp_again)), bp_terms)
+  expect_false(identical(names(get("PATHID2EXTID", envir = mf)), bp_terms))
+})

@@ -7,10 +7,17 @@ gocache_go_data <- function(OrgDb, ont, keytype, ...) {
   key <- gocache_key("go-data", gocache_orgdb_id(OrgDb), ont, keytype)
   value <- gocache_get(key)
   if (is.null(value)) {
-    value <- gocache_fast_go_data(original)(OrgDb, ont, keytype, ...)
+    value <- gocache_snapshot(gocache_fast_go_data(original)(OrgDb, ont, keytype, ...))
     gocache_set(key, value)
   }
-  value
+  gocache_snapshot(value)
+}
+
+gocache_snapshot <- function(value) {
+  if (!is.environment(value)) {
+    return(value)
+  }
+  list2env(as.list(value, all.names = TRUE), envir = new.env(parent = emptyenv()))
 }
 
 gocache_enrich_go <- function(frame) {
@@ -24,7 +31,7 @@ gocache_enrich_go <- function(frame) {
   args <- mget(supplied, envir = frame)
   key_args <- args
   key_args$OrgDb <- gocache_orgdb_id(args$OrgDb)
-  key <- gocache_key("go-result", key_args)
+  key <- gocache_key("go-result", key_args, gocache_result_options())
   value <- gocache_get(key)
   if (is.null(value)) {
     value <- do.call(original, args)
@@ -33,6 +40,10 @@ gocache_enrich_go <- function(frame) {
     }
   }
   value
+}
+
+gocache_result_options <- function() {
+  list(enrichment_force_universe = getOption("enrichment_force_universe", FALSE))
 }
 
 gocache_make_enrich_go <- function(original) {
