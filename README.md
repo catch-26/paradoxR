@@ -49,22 +49,20 @@ reset_ggplot2_palette()
 - **Information content:** `GOSemSim::godata()` calculates information content in one vectorised step.
 - **KEGG download cache:** `clusterProfiler::enrichKEGG()`, `clusterProfiler::gseKEGG()`, `clusterProfiler::enrichMKEGG()` and `clusterProfiler::gseMKEGG()` download each KEGG table one time and keep it on disk for all species, key types and sessions. paradoxR compares the cache with the KEGG release dates at most one time each hour and downloads again when KEGG changes. When KEGG is not available, paradoxR uses the cached tables.
 
-**First-call times,** original function against paradoxR, with identical results:
+**First-call times** in a new R session with an empty cache, original function against paradoxR. The results are identical. Setup: Bioconductor 3.23, R 4.6.2, clusterProfiler 4.20.3, GOSemSim 2.38.3, org.Hs.eg.db, 315 Entrez IDs, 732 BP terms in the `enrichGO()` result.
 
-| Call | Bioconductor | Original | paradoxR | Speed-up |
-|---|---|---|---|---|
-| `clusterProfiler::simplify()`, Wang, 732 BP terms | 3.23 | 55.3 s | 3.1 s | 18x |
-| Wang similarity, all term pairs | 3.23 | 32.4 s | 0.69 s | 47x |
-| `enrichplot::pairwise_termsim(method = "Wang")` | 3.23 | 2.2 s | 0.16 s | 14x |
-| `clusterProfiler::enrichGO()`, BP, new gene list | 3.23 | 14.8 s | 0.54 s | 27x |
-| `GOSemSim::godata(ont = "BP", computeIC = TRUE)` | 3.23 | 30 s | 7 s | 4x |
-| GO annotation build, BP, ENTREZID | 3.22 | 23.1 s | 6.8 s | 3x |
-| GO annotation build, MF, ENTREZID | 3.22 | 9.2 s | 1.8 s | 5x |
-| GO annotation build, all ontologies, ENSEMBL | 3.22 | 47.0 s | 9.3 s | 5x |
+| Call | Original | paradoxR | Speed-up |
+|---|---|---|---|
+| `clusterProfiler::enrichGO(ont = "MF")` | 7.97 s | 2.64 s | 3x |
+| `clusterProfiler::enrichGO(ont = "BP")` | 19.49 s | 6.02 s | 3.2x |
+| `clusterProfiler::enrichGO(ont = "ALL")` | 25.52 s | 8.65 s | 3x |
+| `clusterProfiler::enrichGO(ont = "BP")`, second gene list | 2.03 s | 0.46 s | 4.4x |
+| `clusterProfiler::simplify()` | 51.24 s | 2.11 s | 24x |
+| `GOSemSim::mgoSim(measure = "Wang")` | 29.99 s | 0.69 s | 43x |
+| `enrichplot::pairwise_termsim(method = "Wang")` | 1.97 s | 0.13 s | 15x |
+| `GOSemSim::godata(ont = "BP", computeIC = TRUE)` | 25.25 s | 5.80 s | 4.4x |
 
 **Fallback to the original functions:** paradoxR replaces an upstream function only when the installed code is a version that paradoxR was verified against. For all other versions, the original function runs. When a replacement fails, the original function runs for that call and paradoxR shows one warning.
-
-**Bioconductor 3.22 and 3.23:** all speed-ups are active. On 3.23, a rerun with other cutoffs uses the original function, because it takes only about 0.5 s there.
 
 | Control | Effect |
 |---|---|
