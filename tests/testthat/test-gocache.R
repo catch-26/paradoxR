@@ -143,3 +143,33 @@ test_that("a failing replacement falls back to the original function", {
   expect_error(both(1), "upstream error")
   expect_false("pkg:::g" %in% gocache$warned)
 })
+
+test_that("replacements left by an earlier paradoxR load can be reverted and re-applied", {
+  testthat::skip_if_not_installed("clusterProfiler")
+  loadNamespace("clusterProfiler")
+  on.exit(use_go_cache(), add = TRUE)
+  reset_go_cache()
+  stock <- get("enrichGO", envir = asNamespace("clusterProfiler"))
+  use_go_cache()
+  expect_true(gocache_patched())
+  gocache$original <- NULL
+  expect_true(reset_go_cache())
+  expect_identical(get("enrichGO", envir = asNamespace("clusterProfiler")), stock)
+  use_go_cache()
+  gocache$original <- NULL
+  use_go_cache()
+  expect_true(gocache_patched())
+  expect_identical(gocache_original("clusterProfiler", "enrichGO"), stock)
+})
+
+test_that("unhooking removes only paradoxR's load hooks", {
+  event <- packageEvent("paradoxRhooktest", "onLoad")
+  other <- function(...) NULL
+  setHook(event, other)
+  setHook(event, gocache_on_load)
+  old <- gocache$hooked
+  on.exit({ gocache$hooked <- old; setHook(event, NULL, action = "replace") }, add = TRUE)
+  gocache$hooked <- "paradoxRhooktest"
+  gocache_unhook()
+  expect_identical(getHook(event), list(other))
+})

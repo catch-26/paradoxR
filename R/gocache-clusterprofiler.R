@@ -122,7 +122,13 @@ gocache_apply <- function(patch) {
   }
   original <- get(patch$name, envir = ns)
   if (gocache_is_replacement(original)) {
-    return(invisible(TRUE))
+    if (!is.null(gocache_original(patch$pkg, patch$name))) {
+      return(invisible(TRUE))
+    }
+    original <- attr(original, "paradoxR_original")
+    if (is.null(original)) {
+      return(invisible(FALSE))
+    }
   }
   if (isTRUE(patch$known_body) && !compat_body_is_known(patch$pkg, patch$name, original)) {
     return(invisible(FALSE))
@@ -136,6 +142,7 @@ gocache_apply <- function(patch) {
     replacement <- gocache_with_fallback(replacement, original, paste0(patch$pkg, ":::", patch$name))
   }
   attr(replacement, "paradoxR") <- TRUE
+  attr(replacement, "paradoxR_original") <- original
   for (env in gocache_targets(patch$pkg, patch$exported)) {
     gocache_replace(env, patch$name, replacement)
   }
@@ -147,6 +154,12 @@ gocache_revert <- function(patch) {
     return(invisible(FALSE))
   }
   original <- gocache_original(patch$pkg, patch$name)
+  if (is.null(original)) {
+    original <- attr(get(patch$name, envir = asNamespace(patch$pkg)), "paradoxR_original")
+  }
+  if (is.null(original)) {
+    return(invisible(FALSE))
+  }
   for (env in gocache_targets(patch$pkg, patch$exported)) {
     gocache_replace(env, patch$name, original)
   }
@@ -265,4 +278,14 @@ gocache_on_load <- function(...) {
   if (isTRUE(getOption("paradoxR.go_cache", TRUE))) {
     gocache_use_safely()
   }
+}
+
+gocache_unhook <- function() {
+  for (pkg in gocache$hooked) {
+    event <- packageEvent(pkg, "onLoad")
+    keep <- Filter(function(hook) !identical(hook, gocache_on_load), getHook(event))
+    setHook(event, keep, action = "replace")
+  }
+  gocache$hooked <- character()
+  invisible(NULL)
 }

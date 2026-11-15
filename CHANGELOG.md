@@ -9,3 +9,4 @@
 - Enrichment: `GOSemSim::godata()` computes information content for BP in about 5 s instead of 24 s, with identical results.
 - Enrichment: with paradoxR loaded, `clusterProfiler::enrichKEGG()`, `gseKEGG()`, `enrichMKEGG()` and `gseMKEGG()` keep their KEGG downloads on disk and refresh them only when KEGG releases an update, so later calls, other key types and new R sessions skip the download.
 - Enrichment: rerunning `clusterProfiler::enrichGO()` on the same genes with other p-value or q-value cutoffs returns at once, and other gene set sizes or adjustment methods take under a second. If a sped-up function fails, the original runs instead.
+- Enrichment: unloading paradoxR restores the original clusterProfiler, DOSE and GOSemSim functions, and reloading it in the same session no longer breaks `reset_go_cache()`.
