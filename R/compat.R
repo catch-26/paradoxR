@@ -56,6 +56,14 @@ compat_ports <- list(
     fingerprint = "c5af08e67d404358c0314b7525055a38",
     versions = list(c(GOSemSim = "2.38.3"))
   ),
+  "bioc323-ora-gson" = list(
+    fingerprint = "392b7025e237afdc75e4c3d1dbc7398d",
+    versions = list(c(enrichit = "0.2.7"))
+  ),
+  "bioc323-enrichgo-cutoffs" = list(
+    fingerprint = "9dcbc3f1c90970df00fa41bde793aded",
+    versions = list(c(clusterProfiler = "4.20.3", enrichit = "0.2.7"))
+  ),
   "bioc322-getgodata-sql" = list(
     fingerprint = "6e8f2f19066acebe25a238d44533ce74",
     versions = list(c(clusterProfiler = "4.18.4", AnnotationDbi = "1.72.0"))
