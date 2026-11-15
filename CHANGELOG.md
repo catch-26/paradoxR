@@ -8,3 +8,4 @@
 - Enrichment: the first `enrichGO()`, `gseGO()` or `groupGO()` call for an OrgDb builds its GO annotation 3 to 5 times faster, with identical results.
 - Enrichment: `GOSemSim::godata()` computes information content for BP in about 5 s instead of 24 s, with identical results.
 - Enrichment: with paradoxR loaded, `clusterProfiler::enrichKEGG()`, `gseKEGG()`, `enrichMKEGG()` and `gseMKEGG()` keep their KEGG downloads on disk and refresh them only when KEGG releases an update, so later calls, other key types and new R sessions skip the download.
+- Enrichment: rerunning `clusterProfiler::enrichGO()` on the same genes with other p-value or q-value cutoffs returns at once, and other gene set sizes or adjustment methods take under a second. If a sped-up function fails, the original runs instead.

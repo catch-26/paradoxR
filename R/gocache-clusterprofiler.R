@@ -31,6 +31,11 @@ gocache_enrich_go <- function(frame) {
   args <- mget(supplied, envir = frame)
   key_args <- args
   key_args$OrgDb <- gocache_orgdb_id(args$OrgDb)
+  labels_only <- gocache_cutoffs_are_labels() &&
+    toupper(eval(quote(ont), frame)) %in% c("BP", "MF", "CC")
+  if (labels_only) {
+    key_args[c("pvalueCutoff", "qvalueCutoff")] <- NULL
+  }
   key <- gocache_key("go-result", key_args, gocache_result_options())
   value <- gocache_get(key)
   if (is.null(value)) {
@@ -38,6 +43,10 @@ gocache_enrich_go <- function(frame) {
     if (!is.null(value)) {
       gocache_set(key, value)
     }
+  }
+  if (!is.null(value) && labels_only) {
+    value@pvalueCutoff <- eval(quote(pvalueCutoff), frame)
+    value@qvalueCutoff <- eval(quote(qvalueCutoff), frame)
   }
   value
 }
@@ -77,7 +86,9 @@ gocache_patches <- function() {
     list(pkg = "clusterProfiler", name = "simplify_internal", make = function(original) gocache_simplify_internal, known_body = TRUE),
     list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache_wang, known_body = TRUE),
     list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache_compute_ic, known_body = TRUE),
-    list(pkg = "clusterProfiler", name = "kegg_rest", make = function(original) gocache_kegg_rest)
+    list(pkg = "clusterProfiler", name = "kegg_rest", make = function(original) gocache_kegg_rest),
+    list(pkg = "DOSE", name = "enricher_internal", make = gocache_make_enricher, known_body = TRUE),
+    list(pkg = "clusterProfiler", name = "enricher_internal", make = gocache_make_enricher, known_body = TRUE)
   )
 }
 
@@ -121,6 +132,9 @@ gocache_apply <- function(patch) {
   }
   gocache$original[[paste0(patch$pkg, "::", patch$name)]] <- original
   replacement <- patch$make(original)
+  if (!isTRUE(patch$exported)) {
+    replacement <- gocache_with_fallback(replacement, original, paste0(patch$pkg, ":::", patch$name))
+  }
   attr(replacement, "paradoxR") <- TRUE
   for (env in gocache_targets(patch$pkg, patch$exported)) {
     gocache_replace(env, patch$name, replacement)
@@ -195,6 +209,9 @@ use_go_cache <- function() {
       gocache_apply(patch)
     }
   }
+  if (gocache_patched()) {
+    gocache_note_cutoffs()
+  }
   invisible(gocache_patched())
 }
 
@@ -208,8 +225,44 @@ reset_go_cache <- function() {
   invisible(changed)
 }
 
+gocache_with_fallback <- function(fast, original, label) {
+  force(fast)
+  force(original)
+  function(...) {
+    tryCatch(fast(...), error = function(e) {
+      value <- original(...)
+      gocache_warn_once(label, conditionMessage(e))
+      value
+    })
+  }
+}
+
+gocache_warn_once <- function(label, reason) {
+  if (label %in% gocache$warned) {
+    return(invisible(NULL))
+  }
+  gocache$warned <- c(gocache$warned, label)
+  warning(
+    "paradoxR's replacement for ", label, " failed (", reason, "); ",
+    "using the original function for this call.",
+    call. = FALSE
+  )
+}
+
+gocache_use_safely <- function() {
+  tryCatch(use_go_cache(), error = function(e) {
+    try(reset_go_cache(), silent = TRUE)
+    warning(
+      "paradoxR could not apply its clusterProfiler speed-ups (", conditionMessage(e), "); ",
+      "the original functions stay in place.",
+      call. = FALSE
+    )
+    invisible(FALSE)
+  })
+}
+
 gocache_on_load <- function(...) {
   if (isTRUE(getOption("paradoxR.go_cache", TRUE))) {
-    use_go_cache()
+    gocache_use_safely()
   }
 }

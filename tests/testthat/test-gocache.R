@@ -113,3 +113,33 @@ test_that("cached GO data stays separate per ontology across calls", {
   expect_identical(names(get("PATHID2EXTID", envir = bp_again)), bp_terms)
   expect_false(identical(names(get("PATHID2EXTID", envir = mf)), bp_terms))
 })
+
+test_that("gocache_intersect_each() matches lapply(intersect) exactly", {
+  set.seed(1)
+  universe <- c(as.character(1:50), NA)
+  sets <- list(
+    a = c("1", "2", "2", "60", NA),
+    b = character(),
+    c = as.character(c(5, 3, 3, 1)),
+    d = "99"
+  )
+  expect_identical(gocache_intersect_each(sets, universe), lapply(sets, intersect, universe))
+  expect_identical(gocache_intersect_each(sets, character()), lapply(sets, intersect, character()))
+  expect_identical(gocache_intersect_each(list(), universe), lapply(list(), intersect, universe))
+  big <- replicate(200, sample(as.character(1:300), sample(0:40, 1), replace = TRUE), simplify = FALSE)
+  names(big) <- paste0("t", seq_along(big))
+  expect_identical(gocache_intersect_each(big, as.character(1:150)), lapply(big, intersect, as.character(1:150)))
+})
+
+test_that("a failing replacement falls back to the original function", {
+  gocache$warned <- character()
+  original <- function(x, y = 2) x + y
+  broken <- function(x, y = 2) stop("boom")
+  safe <- gocache_with_fallback(broken, original, "pkg:::f")
+  expect_warning(expect_identical(safe(1), 3), "pkg:::f")
+  expect_identical(safe(1, y = 5), 6)
+  failing_original <- function(x) stop("upstream error")
+  both <- gocache_with_fallback(broken, failing_original, "pkg:::g")
+  expect_error(both(1), "upstream error")
+  expect_false("pkg:::g" %in% gocache$warned)
+})
