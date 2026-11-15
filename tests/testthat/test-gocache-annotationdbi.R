@@ -30,6 +30,7 @@ test_that("get_GO_data() builds the same GO data with the SQL lookup", {
   if (gocache_is_replacement(original)) {
     original <- gocache_original("clusterProfiler", "get_GO_data")
   }
+  testthat::skip_if_not(compat_port_applies("bioc322-getgodata-sql", original), "port not verified for these versions")
   fast <- gocache_fast_go_data(original)
   expect_false(identical(body(fast), body(original)))
   build <- function(fun) {
@@ -48,6 +49,7 @@ test_that("information content matches GOSemSim", {
   if (gocache_is_replacement(original)) {
     original <- gocache_original("GOSemSim", "computeIC")
   }
+  testthat::skip_if_not(compat_port_applies("bioc322-computeic", original), "port not verified for these versions")
   annotation <- AnnotationDbi::select(
     org.Hs.eg.db::org.Hs.eg.db,
     keys = AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = "ENTREZID")[1:2000],

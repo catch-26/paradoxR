@@ -53,12 +53,12 @@ test_that("simplify() and Wang similarity give the same result with and without 
   ids <- utils::head(as.data.frame(ego)$ID, 40)
   testthat::skip_if(length(ids) < 5)
   fast_sim <- GOSemSim::mgoSim(ids, ids, semData = GOSemSim::godata(ont = "MF"), measure = "Wang", combine = NULL)
-  fast <- clusterProfiler::simplify(ego, cutoff = 0.5)
+  fast <- suppressWarnings(clusterProfiler::simplify(ego, cutoff = 0.5))
   expect_true(gocache_patched("GOSemSim", "wangMethod"))
   reset_go_cache()
   expect_false(gocache_patched("GOSemSim", "wangMethod"))
   expect_identical(GOSemSim::mgoSim(ids, ids, semData = GOSemSim::godata(ont = "MF"), measure = "Wang", combine = NULL), fast_sim)
-  expect_identical(clusterProfiler::simplify(ego, cutoff = 0.5)@result, fast@result)
+  expect_identical(suppressWarnings(clusterProfiler::simplify(ego, cutoff = 0.5))@result, fast@result)
 })
 
 test_that("KEGG tables are cached per release and reused offline", {
@@ -107,6 +107,7 @@ test_that("cached GO data stays separate per ontology across calls", {
   get_go_data <- get("get_GO_data", envir = asNamespace("clusterProfiler"))
   db <- org.Hs.eg.db::org.Hs.eg.db
   bp <- get_go_data(db, "BP", "ENTREZID")
+  testthat::skip_if_not(is.environment(bp), "this clusterProfiler returns GO data as an object, not a shared environment")
   bp_terms <- names(get("PATHID2EXTID", envir = bp))
   mf <- get_go_data(db, "MF", "ENTREZID")
   bp_again <- get_go_data(db, "BP", "ENTREZID")
@@ -172,4 +173,18 @@ test_that("unhooking removes only paradoxR's load hooks", {
   gocache$hooked <- "paradoxRhooktest"
   gocache_unhook()
   expect_identical(getHook(event), list(other))
+})
+
+test_that("fingerprints follow the function code, not its source text", {
+  f <- function(x, y = 2) {
+    x + y
+  }
+  g <- eval(parse(text = "function(x, y = 2) {\n\n  x +   y\n}", keep.source = TRUE)[[1]])
+  h <- function(x, y = 3) {
+    x + y
+  }
+  expect_identical(compat_fingerprint(f), compat_fingerprint(g))
+  expect_false(identical(compat_fingerprint(f), compat_fingerprint(h)))
+  expect_false(compat_port_applies("no-such-port", f))
+  expect_false(compat_port_applies("bioc322-wang", NULL))
 })

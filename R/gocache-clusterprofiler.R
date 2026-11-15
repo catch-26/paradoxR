@@ -83,12 +83,14 @@ gocache_patches <- function() {
   list(
     list(pkg = "clusterProfiler", name = "get_GO_data", make = function(original) gocache_go_data),
     list(pkg = "clusterProfiler", name = "enrichGO", make = gocache_make_enrich_go, exported = TRUE),
-    list(pkg = "clusterProfiler", name = "simplify_internal", make = function(original) gocache_simplify_internal, known_body = TRUE),
-    list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache_wang, known_body = TRUE),
-    list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache_compute_ic, known_body = TRUE),
+    list(pkg = "clusterProfiler", name = "simplify_internal", make = function(original) gocache_simplify_internal, port = "bioc322-simplify"),
+    list(pkg = "clusterProfiler", name = "simplify_internal", make = function(original) gocache323_simplify_internal, port = "bioc323-simplify"),
+    list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache_wang, port = "bioc322-wang"),
+    list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache323_wang, port = "bioc323-wang"),
+    list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache_compute_ic, port = "bioc322-computeic"),
     list(pkg = "clusterProfiler", name = "kegg_rest", make = function(original) gocache_kegg_rest, fallback = FALSE),
-    list(pkg = "DOSE", name = "enricher_internal", make = gocache_make_enricher, known_body = TRUE),
-    list(pkg = "clusterProfiler", name = "enricher_internal", make = gocache_make_enricher, known_body = TRUE)
+    list(pkg = "DOSE", name = "enricher_internal", make = gocache_make_enricher, port = "bioc322-enricher"),
+    list(pkg = "clusterProfiler", name = "enricher_internal", make = gocache_make_enricher, port = "bioc322-enricher")
   )
 }
 
@@ -130,7 +132,7 @@ gocache_apply <- function(patch) {
       return(invisible(FALSE))
     }
   }
-  if (isTRUE(patch$known_body) && !compat_body_is_known(patch$pkg, patch$name, original)) {
+  if (!is.null(patch$port) && !compat_port_applies(patch$port, original)) {
     return(invisible(FALSE))
   }
   if (is.null(gocache$original)) {

@@ -43,10 +43,10 @@ gocache_note_cutoffs <- function() {
   ns_cp <- asNamespace("clusterProfiler")
   enricher <- gocache_original("clusterProfiler", "enricher_internal")
   if (is.null(enricher)) {
-    enricher <- get("enricher_internal", envir = ns_cp)
+    enricher <- get0("enricher_internal", envir = ns_cp, inherits = FALSE)
   }
   enrich_go <- gocache_original("clusterProfiler", "enrichGO")
   gocache$cutoffs_are_labels <- !is.null(enrich_go) &&
-    compat_body_is_known("DOSE", "enricher_internal", enricher) &&
-    compat_body_is_known("clusterProfiler", "enrichGO", enrich_go)
+    compat_port_applies("bioc322-enricher", enricher) &&
+    compat_port_applies("bioc322-enrichgo-cutoffs", enrich_go)
 }
