@@ -32,7 +32,13 @@ at once instead of pair by pair, which speeds up \code{simplify()} and
 \item the first GO annotation for an OrgDb is read with one SQL query per
 ontology table instead of \code{AnnotationDbi::mapIds()}, and information
 content in \code{GOSemSim::godata()} is summed over all terms at once; the
-results are identical.
+results are identical;
+\item every KEGG table that \code{enrichKEGG()}, \code{gseKEGG()}, \code{enrichMKEGG()} and
+\code{gseMKEGG()} download from the KEGG REST API is kept on disk per species,
+KEGG database and key type, so switching species or key type, or starting
+a new R session, no longer downloads it again. The cache is checked
+against KEGG's release dates once an hour and downloads again when KEGG
+has been updated; when KEGG is unreachable, the cached tables are used.
 }
 
 Called automatically when paradoxR is loaded, unless

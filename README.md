@@ -53,6 +53,19 @@ if (requireNamespace("clusterProfiler", quietly = TRUE) && requireNamespace("org
 }
 ```
 
+### KEGG cache
+
+**Loading paradoxR also caches KEGG downloads.** `clusterProfiler::enrichKEGG()`, `gseKEGG()`, `enrichMKEGG()` and `gseMKEGG()` download pathway, module and ID conversion tables from the KEGG REST API on every new R session and whenever the species or key type changes. With paradoxR loaded each table is downloaded once, kept on disk, and reused across species, key types and sessions, so a call that took about 5 seconds returns in about 1. The cache is checked against KEGG's release dates once an hour and refreshed when KEGG updates, so results match a fresh download; when KEGG is unreachable, the cached tables are used. `reset_go_cache()` and `clear_go_cache()` cover the KEGG cache too.
+
+```r
+library(paradoxR)
+if (requireNamespace("clusterProfiler", quietly = TRUE) && requireNamespace("DOSE", quietly = TRUE)) {
+  data(geneList, package = "DOSE")
+  genes <- names(geneList)[abs(geneList) > 2]
+  clusterProfiler::enrichKEGG(genes, organism = "hsa")
+}
+```
+
 ## License
 
 Apache 2.0, see [LICENSE](LICENSE).

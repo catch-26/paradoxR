@@ -65,7 +65,8 @@ gocache_patches <- function() {
     list(pkg = "clusterProfiler", name = "enrichGO", make = gocache_make_enrich_go, exported = TRUE),
     list(pkg = "clusterProfiler", name = "simplify_internal", make = function(original) gocache_simplify_internal, known_body = TRUE),
     list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache_wang, known_body = TRUE),
-    list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache_compute_ic, known_body = TRUE)
+    list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache_compute_ic, known_body = TRUE),
+    list(pkg = "clusterProfiler", name = "kegg_rest", make = function(original) gocache_kegg_rest)
   )
 }
 
@@ -145,7 +146,13 @@ gocache_revert <- function(patch) {
 #' * the first GO annotation for an OrgDb is read with one SQL query per
 #'   ontology table instead of `AnnotationDbi::mapIds()`, and information
 #'   content in `GOSemSim::godata()` is summed over all terms at once; the
-#'   results are identical.
+#'   results are identical;
+#' * every KEGG table that `enrichKEGG()`, `gseKEGG()`, `enrichMKEGG()` and
+#'   `gseMKEGG()` download from the KEGG REST API is kept on disk per species,
+#'   KEGG database and key type, so switching species or key type, or starting
+#'   a new R session, no longer downloads it again. The cache is checked
+#'   against KEGG's release dates once an hour and downloads again when KEGG
+#'   has been updated; when KEGG is unreachable, the cached tables are used.
 #'
 #' Called automatically when paradoxR is loaded, unless
 #' `options(paradoxR.go_cache = FALSE)` is set beforehand. The cache is keyed

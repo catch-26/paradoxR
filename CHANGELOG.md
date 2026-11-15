@@ -7,3 +7,4 @@
 - Enrichment: with paradoxR loaded, `clusterProfiler::simplify()` and Wang similarity in GOSemSim and enrichplot run about 10 times faster with identical results.
 - Enrichment: the first `enrichGO()`, `gseGO()` or `groupGO()` call for an OrgDb builds its GO annotation 3 to 5 times faster, with identical results.
 - Enrichment: `GOSemSim::godata()` computes information content for BP in about 5 s instead of 24 s, with identical results.
+- Enrichment: with paradoxR loaded, `clusterProfiler::enrichKEGG()`, `gseKEGG()`, `enrichMKEGG()` and `gseMKEGG()` keep their KEGG downloads on disk and refresh them only when KEGG releases an update, so later calls, other key types and new R sessions skip the download.

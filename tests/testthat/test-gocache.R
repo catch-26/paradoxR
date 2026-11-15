@@ -60,3 +60,39 @@ test_that("simplify() and Wang similarity give the same result with and without 
   expect_identical(GOSemSim::mgoSim(ids, ids, semData = GOSemSim::godata(ont = "MF"), measure = "Wang", combine = NULL), fast_sim)
   expect_identical(clusterProfiler::simplify(ego, cutoff = 0.5)@result, fast@result)
 })
+
+test_that("KEGG tables are cached per release and reused offline", {
+  testthat::skip_if_not_installed("clusterProfiler")
+  testthat::skip_if_not_installed("GO.db")
+  dir <- tempfile("gocache")
+  old <- options(paradoxR.go_cache_dir = dir)
+  saved <- as.list(gocache)[c("original", "kegg_release", "kegg_release_time")]
+  on.exit({
+    for (name in names(saved)) gocache[[name]] <- saved[[name]]
+    gocache$memory_result <- list()
+    options(old)
+    unlink(dir, recursive = TRUE)
+  }, add = TRUE)
+  calls <- 0L
+  gocache$original[["clusterProfiler::kegg_rest"]] <- function(rest_url) {
+    calls <<- calls + 1L
+    data.frame(from = rest_url, to = as.character(calls))
+  }
+  release <- function(value) {
+    gocache$kegg_release <- value
+    gocache$kegg_release_time <- Sys.time()
+  }
+  url <- "https://rest.kegg.jp/list/pathway/hsa"
+  release("pathway 588 2026/11/09")
+  first <- gocache_kegg_rest(url)
+  gocache$memory_result <- list()
+  expect_identical(gocache_kegg_rest(url), first)
+  expect_identical(calls, 1L)
+  release("pathway 590 2026/12/01")
+  expect_identical(gocache_kegg_rest(url)$to, "2")
+  release(NA_character_)
+  expect_message(offline <- gocache_kegg_rest(url), "unreachable")
+  expect_identical(offline$to, "2")
+  expect_identical(calls, 2L)
+  expect_identical(clear_go_cache(), 1L)
+})
