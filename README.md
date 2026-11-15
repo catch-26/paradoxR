@@ -39,6 +39,20 @@ reset_ggplot2_palette()
 
 **Regenerating the colours:** the hex codes are stored as literals in `R/palette-sienna-data.R`. `source("data-raw/palette-sienna.R")` rebuilds them from the 24 swatches with colorspace, dplyr and purrr.
 
+## Enrichment
+
+### GO cache
+
+**Loading paradoxR speeds up `clusterProfiler::enrichGO()`.** The GO annotation for each OrgDb, ontology and key type is built once and kept on disk, and each result is remembered, so a repeated call, or the first call in a new R session, returns in under a second instead of 10 to 30 seconds. `compareCluster()` and other functions that call `enrichGO()` benefit too. The cache follows the clusterProfiler, GO.db and OrgDb versions; `reset_go_cache()` switches back to clusterProfiler's own functions and `clear_go_cache()` deletes the cache. Set `options(paradoxR.go_cache = FALSE)` before loading paradoxR to leave clusterProfiler unchanged.
+
+```r
+library(paradoxR)
+if (requireNamespace("clusterProfiler", quietly = TRUE) && requireNamespace("org.Hs.eg.db", quietly = TRUE)) {
+  genes <- AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = "ENTREZID")[1:300]
+  clusterProfiler::enrichGO(genes, org.Hs.eg.db::org.Hs.eg.db, ont = "MF")
+}
+```
+
 ## License
 
 Apache 2.0, see [LICENSE](LICENSE).
