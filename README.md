@@ -67,9 +67,9 @@ reset_ggplot2_palette()
 
 | Control | Effect |
 |---|---|
-| `reset_go_cache()` | Restores the original functions. |
-| `use_go_cache()` | Applies the faster functions again. |
-| `clear_go_cache()` | Deletes the GO and KEGG cache. |
+| `reset_speedups()` | Restores the original functions. |
+| `use_speedups()` | Applies the faster functions again. |
+| `clear_cache()` | Deletes the GO and KEGG cache. |
 | `options(paradoxR.speedups = FALSE)` | Set before loading paradoxR to keep all original functions, including DESeq2 and sva. |
 | `options(paradoxR.cache_dir = )` | Sets the cache directory. The default is `tools::R_user_dir("paradoxR", "cache")`. |
 
@@ -111,7 +111,7 @@ kk <- clusterProfiler::enrichKEGG(genes, organism = "hsa")
 | `options(paradoxR.deseq2 = FALSE)` | Set before loading DESeq2 to keep the original DESeq2 functions. |
 | `options(paradoxR.sva = FALSE)` | Set before loading sva to keep the original sva function. |
 
-`reset_go_cache()` and `use_go_cache()` also restore and apply these replacements.
+`reset_speedups()` and `use_speedups()` also restore and apply these replacements.
 
 ## License
 

@@ -16,3 +16,16 @@ test_that("the general option names win and the older names still work", {
   withr::local_options(paradoxR.cache_dir = "new")
   expect_identical(gocache_dir(), "new")
 })
+
+test_that("the old function names still call their replacements", {
+  cache_dir <- tempfile("gocache")
+  withr::local_options(paradoxR.cache_dir = cache_dir)
+  withr::defer(unlink(cache_dir, recursive = TRUE))
+  gocache_set("go-result-a", list(x = 1))
+  expect_identical(clear_go_cache(), 1L)
+  expect_null(gocache_get("go-result-a"))
+  withr::defer(use_speedups())
+  reset_speedups()
+  expect_false(reset_go_cache())
+  expect_identical(use_go_cache(), use_speedups())
+})

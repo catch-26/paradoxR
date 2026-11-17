@@ -18,3 +18,4 @@
 - RNA-seq: with paradoxR loaded, `DESeq2::DESeq()` computes the trimmed means behind Cook's distances with one sort per matrix instead of one call per gene, with identical results. `options(paradoxR.deseq2 = FALSE)` keeps the original.
 - RNA-seq: with paradoxR loaded, `sva::ComBat_seq()` adjusts all counts in one vectorised step instead of one call per count, with identical results. `options(paradoxR.sva = FALSE)` keeps the original.
 - Settings: `options(paradoxR.speedups = FALSE)` turns off every speed-up and `options(paradoxR.cache_dir = )` sets the cache directory. The older names `paradoxR.go_cache` and `paradoxR.go_cache_dir` still work.
+- Settings: `use_speedups()` and `reset_speedups()` apply and remove every speed-up, and `clear_cache()` deletes the GO and KEGG cache. The older names `use_go_cache()`, `reset_go_cache()` and `clear_go_cache()` still work.

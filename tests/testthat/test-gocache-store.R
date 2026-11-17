@@ -74,12 +74,12 @@ test_that("a damaged cache file is dropped and rebuilt", {
   expect_identical(gocache_get("go-result-a"), list(x = 1))
 })
 
-test_that("clear_go_cache() also removes unfinished writes", {
+test_that("clear_cache() also removes unfinished writes", {
   local_cache_dir()
   gocache_set("go-result-a", 1)
   writeBin(as.raw(1:5), file.path(gocache_dir(), "go-result-b-1a2b.tmp"))
   writeBin(as.raw(1:5), file.path(gocache_dir(), "other.rds"))
-  expect_identical(clear_go_cache(), 1L)
+  expect_identical(clear_cache(), 1L)
   expect_identical(list.files(gocache_dir()), "other.rds")
 })
 

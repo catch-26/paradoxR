@@ -111,10 +111,10 @@ gocache_remember <- function(key, value) {
   invisible(NULL)
 }
 
-#' Clear the GO enrichment cache
+#' Clear paradoxR's cache
 #'
-#' Deletes the GO annotation data and `enrichGO()` results that paradoxR keeps
-#' in memory and on disk. The cache lives in
+#' Deletes the GO annotation data, `enrichGO()` results and KEGG tables that
+#' paradoxR keeps in memory and on disk. The cache lives in
 #' `tools::R_user_dir("paradoxR", "cache")`, or in the directory set with
 #' `options(paradoxR.cache_dir = )` (the older name `paradoxR.go_cache_dir`
 #' still works).
@@ -122,8 +122,8 @@ gocache_remember <- function(key, value) {
 #' @return The number of files deleted, invisibly.
 #' @export
 #' @examples
-#' clear_go_cache()
-clear_go_cache <- function() {
+#' clear_cache()
+clear_cache <- function() {
   gocache$memory_data <- list()
   gocache$memory_result <- list()
   files <- list.files(gocache_dir(), pattern = "^go-.*\\.rds$", full.names = TRUE)

@@ -5,6 +5,6 @@
 }
 
 .onUnload <- function(libpath) {
-  try(reset_go_cache(), silent = TRUE)
+  try(reset_speedups(), silent = TRUE)
   try(gocache_unhook(), silent = TRUE)
 }

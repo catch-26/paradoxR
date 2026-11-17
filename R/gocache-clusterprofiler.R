@@ -175,9 +175,10 @@ gocache_revert <- function(patch) {
   invisible(TRUE)
 }
 
-#' Cache and speed up GO enrichment in clusterProfiler
+#' Apply or remove paradoxR's speed-ups
 #'
-#' Replaces functions inside clusterProfiler and GOSemSim so that
+#' `use_speedups()` replaces functions inside clusterProfiler, DOSE, GOSemSim,
+#' DESeq2 and sva so that
 #' `clusterProfiler::enrichGO()`, `clusterProfiler::simplify()` and the
 #' functions that call them, such as `clusterProfiler::compareCluster()`,
 #' reuse earlier work and run faster:
@@ -216,18 +217,18 @@ gocache_revert <- function(patch) {
 #' updating any of them starts a fresh cache. The `simplify()`, similarity,
 #' DESeq2 and sva replacements apply only to the package versions they were
 #' checked against; other versions keep their own code. Set the DESeq2 and
-#' sva options before those packages load, or call `reset_go_cache()` and
-#' `use_go_cache()` after setting them.
-#' `reset_go_cache()` restores the original functions and [clear_go_cache()]
+#' sva options before those packages load, or call `reset_speedups()` and
+#' `use_speedups()` after setting them.
+#' `reset_speedups()` restores the original functions and [clear_cache()]
 #' deletes the cache.
 #'
 #' @return `TRUE` invisibly when clusterProfiler was changed, `FALSE` when it
 #'   is not loaded yet; the change is then applied when it loads.
 #' @export
 #' @examples
-#' use_go_cache()
-#' reset_go_cache()
-use_go_cache <- function() {
+#' use_speedups()
+#' reset_speedups()
+use_speedups <- function() {
   if (is.null(gocache$hooked)) {
     gocache$hooked <- character()
   }
@@ -248,9 +249,9 @@ use_go_cache <- function() {
   invisible(gocache_patched())
 }
 
-#' @rdname use_go_cache
+#' @rdname use_speedups
 #' @export
-reset_go_cache <- function() {
+reset_speedups <- function() {
   changed <- FALSE
   for (patch in gocache_patches()) {
     changed <- isTRUE(gocache_revert(patch)) || changed
@@ -283,8 +284,8 @@ gocache_warn_once <- function(label, reason) {
 }
 
 gocache_use_safely <- function() {
-  tryCatch(use_go_cache(), error = function(e) {
-    try(reset_go_cache(), silent = TRUE)
+  tryCatch(use_speedups(), error = function(e) {
+    try(reset_speedups(), silent = TRUE)
     warning(
       "paradoxR could not apply its clusterProfiler speed-ups (", conditionMessage(e), "); ",
       "the original functions stay in place.",
