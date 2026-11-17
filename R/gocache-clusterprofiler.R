@@ -91,7 +91,10 @@ gocache_patches <- function() {
     list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache_compute_ic, port = "bioc322-computeic"),
     list(pkg = "clusterProfiler", name = "kegg_rest", make = function(original) gocache_kegg_rest, fallback = FALSE),
     list(pkg = "DOSE", name = "enricher_internal", make = gocache_make_enricher, port = "bioc322-enricher"),
-    list(pkg = "clusterProfiler", name = "enricher_internal", make = gocache_make_enricher, port = "bioc322-enricher")
+    list(pkg = "clusterProfiler", name = "enricher_internal", make = gocache_make_enricher, port = "bioc322-enricher"),
+    list(pkg = "DESeq2", name = "trimmedCellVariance", make = speedup_make_trimmed, port = "bioc322-deseq2-trimmed-cell", option = "paradoxR.deseq2"),
+    list(pkg = "DESeq2", name = "trimmedVariance", make = speedup_make_trimmed, port = "bioc322-deseq2-trimmed", option = "paradoxR.deseq2"),
+    list(pkg = "sva", name = "match_quantiles", make = speedup_make_match_quantiles, port = "bioc322-sva-match-quantiles", option = "paradoxR.sva")
   )
 }
 
@@ -132,6 +135,9 @@ gocache_apply <- function(patch) {
     if (is.null(original)) {
       return(invisible(FALSE))
     }
+  }
+  if (!is.null(patch$option) && !isTRUE(getOption(patch$option, TRUE))) {
+    return(invisible(FALSE))
   }
   if (!is.null(patch$port) && !compat_port_applies(patch$port, original)) {
     return(invisible(FALSE))
@@ -188,6 +194,14 @@ gocache_revert <- function(patch) {
 #'   ontology table instead of `AnnotationDbi::mapIds()`, and information
 #'   content in `GOSemSim::godata()` is summed over all terms at once; the
 #'   results are identical;
+#' * `DESeq2::DESeq()` computes the trimmed means behind Cook's distances
+#'   with one sort per matrix instead of one `mean(trim = )` call per gene;
+#'   a gene's value is used only where it provably equals the original, and
+#'   `options(paradoxR.deseq2 = FALSE)` keeps the original;
+#' * `sva::ComBat_seq()` moves counts to their adjusted quantiles in one
+#'   vectorised `stats::pnbinom()` and `stats::qnbinom()` call instead of one
+#'   call per gene and sample; `options(paradoxR.sva = FALSE)` keeps the
+#'   original;
 #' * every KEGG table that `enrichKEGG()`, `gseKEGG()`, `enrichMKEGG()` and
 #'   `gseMKEGG()` download from the KEGG REST API is kept on disk per species,
 #'   KEGG database and key type, so switching species or key type, or starting
@@ -198,9 +212,11 @@ gocache_revert <- function(patch) {
 #' Called automatically when paradoxR is loaded, unless
 #' `options(paradoxR.go_cache = FALSE)` is set beforehand. The cache is keyed
 #' by the clusterProfiler and GO.db versions and the OrgDb database file, so
-#' updating any of them starts a fresh cache. The `simplify()` and similarity
-#' replacements apply only to the clusterProfiler and GOSemSim versions they
-#' were checked against; other versions keep their own code.
+#' updating any of them starts a fresh cache. The `simplify()`, similarity,
+#' DESeq2 and sva replacements apply only to the package versions they were
+#' checked against; other versions keep their own code. Set the DESeq2 and
+#' sva options before those packages load, or call `reset_go_cache()` and
+#' `use_go_cache()` after setting them.
 #' `reset_go_cache()` restores the original functions and [clear_go_cache()]
 #' deletes the cache.
 #'

@@ -15,3 +15,5 @@
 - Enrichment: on Bioconductor 3.23, rerunning `clusterProfiler::enrichGO()` on the same genes with other p-value or q-value cutoffs also returns at once.
 - Enrichment: on Bioconductor 3.23, the first `clusterProfiler::enrichGO()` call for an OrgDb builds the GO annotation with SQL, about 8 times faster for BP.
 - Enrichment: the GO and KEGG cache works the same on Linux, macOS and Windows: a file another R session is reading no longer causes a warning, a damaged cache file is rebuilt, and `clear_go_cache()` also removes unfinished writes.
+- RNA-seq: with paradoxR loaded, `DESeq2::DESeq()` computes the trimmed means behind Cook's distances with one sort per matrix instead of one call per gene, with identical results. `options(paradoxR.deseq2 = FALSE)` keeps the original.
+- RNA-seq: with paradoxR loaded, `sva::ComBat_seq()` adjusts all counts in one vectorised step instead of one call per count, with identical results. `options(paradoxR.sva = FALSE)` keeps the original.

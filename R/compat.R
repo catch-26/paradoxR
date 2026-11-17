@@ -71,6 +71,18 @@ compat_ports <- list(
   "bioc322-getgodata-sql" = list(
     fingerprint = "6e8f2f19066acebe25a238d44533ce74",
     versions = list(c(clusterProfiler = "4.18.4", AnnotationDbi = "1.72.0"))
+  ),
+  "bioc322-deseq2-trimmed-cell" = list(
+    fingerprint = "83e5bf9230d476a84c299768552a7b7b",
+    versions = list(c(DESeq2 = "1.50.2"), c(DESeq2 = "1.52.0"))
+  ),
+  "bioc322-deseq2-trimmed" = list(
+    fingerprint = "c5e7ba5290a6e35567b894d43d0cf937",
+    versions = list(c(DESeq2 = "1.50.2"), c(DESeq2 = "1.52.0"))
+  ),
+  "bioc322-sva-match-quantiles" = list(
+    fingerprint = "51b06e595e50acfa16c29e83b0254ac8",
+    versions = list(c(sva = "3.58.0"), c(sva = "3.60.0"))
   )
 )
 

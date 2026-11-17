@@ -24,11 +24,16 @@ Suggests:
     clusterProfiler,
     colorspace,
     DBI,
+    DESeq2,
     GO.db,
     GOSemSim,
     methods,
     org.Hs.eg.db,
-    testthat (>= 3.0.0)
+    S4Vectors,
+    SummarizedExperiment,
+    sva,
+    testthat (>= 3.0.0),
+    withr
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
