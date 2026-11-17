@@ -49,7 +49,7 @@ reset_ggplot2_palette()
 - **Information content:** `GOSemSim::godata()` calculates information content in one vectorised step.
 - **KEGG download cache:** `clusterProfiler::enrichKEGG()`, `clusterProfiler::gseKEGG()`, `clusterProfiler::enrichMKEGG()` and `clusterProfiler::gseMKEGG()` download each KEGG table one time and keep it on disk for all species, key types and sessions. paradoxR compares the cache with the KEGG release dates at most one time each hour and downloads again when KEGG changes. When KEGG is not available, paradoxR uses the cached tables.
 
-**First-call times** in a new R session with an empty cache, original function against paradoxR. The results are identical. Setup: Bioconductor 3.23, R 4.6.2, clusterProfiler 4.20.3, GOSemSim 2.38.3, org.Hs.eg.db, 315 Entrez IDs, 732 BP terms in the `enrichGO()` result. Mouse row: org.Mm.eg.db, 400 Ensembl IDs, 956 BP terms. `DESeq2::DESeq()`: DESeq2 1.52.0, 30,000 simulated genes, 24 samples in 8 groups of 3.
+**First-call times** in a new R session with an empty cache, original function against paradoxR. The results are identical. Setup: Bioconductor 3.23, R 4.6.2, clusterProfiler 4.20.3, GOSemSim 2.38.3, org.Hs.eg.db, 315 Entrez IDs, 732 BP terms in the `enrichGO()` result. Mouse row: org.Mm.eg.db, 400 Ensembl IDs, 956 BP terms.
 
 | Call | Original | paradoxR | Speed-up |
 |---|---|---|---|
@@ -62,7 +62,6 @@ reset_ggplot2_palette()
 | `GOSemSim::mgoSim(measure = "Wang")` | 29.99 s | 0.69 s | 43x |
 | `enrichplot::pairwise_termsim(method = "Wang")` | 1.97 s | 0.13 s | 15x |
 | `GOSemSim::godata(ont = "BP", computeIC = TRUE)` | 25.25 s | 5.80 s | 4.4x |
-| `DESeq2::DESeq()`, design `~ batch + group` | 26.81 s | 12.81 s | 2.1x |
 
 **Fallback to the original functions:** paradoxR replaces an upstream function only when the installed code is a version that paradoxR was verified against. For all other versions, the original function runs. When a replacement fails, the original function runs for that call and paradoxR shows one warning.
 
@@ -93,7 +92,19 @@ kk <- clusterProfiler::enrichKEGG(genes, organism = "hsa")
 **Loading paradoxR also makes DESeq2 and sva faster, with results identical to the original functions.** You do not change your code.
 
 - **DESeq2:** `DESeq2::DESeq()` calculates the trimmed means for Cook's distances with one sort for each matrix instead of one call for each gene. The speed-up is largest with few samples in each group of the design. paradoxR uses a gene's value only where it is provably equal to the original; for all other genes, the original calculation runs.
-- **sva:** `sva::ComBat_seq()` adjusts all counts in one vectorised step instead of one call for each count, about 1.5 to 1.8 times faster.
+- **sva:** `sva::ComBat_seq()` adjusts all counts in one vectorised step instead of one call for each count.
+
+**First-call times** in a new R session, original function against paradoxR, median of 5 runs. The results are identical. Setup: Bioconductor 3.23, R 4.6.2, DESeq2 1.52.0, sva 3.60.0, 30,000 simulated genes; 24 samples for `DESeq()`, 12 samples in 2 batches for `ComBat_seq()`.
+
+| Call | Original | paradoxR | Speed-up |
+|---|---|---|---|
+| `DESeq2::DESeq()`, `~ batch + group`, 8 groups of 3 samples | 26.81 s | 12.81 s | 2.1x |
+| `DESeq2::DESeq()`, `~ batch + group`, 4 groups of 6 samples | 14.05 s | 10.29 s | 1.4x |
+| `DESeq2::DESeq()`, `~ group`, 2 groups of 12 samples | 10.80 s | 9.17 s | 1.2x |
+| `DESeq2::DESeq()`, `~ x`, continuous covariate | 8.52 s | 7.55 s | 1.1x |
+| `sva::ComBat_seq(group = )` | 5.85 s | 3.75 s | 1.6x |
+| `sva::ComBat_seq()`, no group | 4.87 s | 2.73 s | 1.8x |
+| `sva::ComBat_seq(group = , covar_mod = )`, 3 batches | 15.86 s | 10.99 s | 1.4x |
 
 | Control | Effect |
 |---|---|
