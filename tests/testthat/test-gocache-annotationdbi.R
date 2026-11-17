@@ -1,6 +1,6 @@
 test_that("the SQL GO lookup returns mapIds() values without repeats", {
-  testthat::skip_if_not_installed("org.Hs.eg.db")
-  testthat::skip_if_not_installed("GO.db")
+  skip_if_no_bioc("org.Hs.eg.db")
+  skip_if_no_bioc("GO.db")
   db <- org.Hs.eg.db::org.Hs.eg.db
   terms <- AnnotationDbi::Ontology(GO.db::GOTERM)
   keys <- c(names(terms)[terms == "CC"][1:200], "GO:0000000")
@@ -14,7 +14,7 @@ test_that("the SQL GO lookup returns mapIds() values without repeats", {
 })
 
 test_that("other lookups fall back to mapIds()", {
-  testthat::skip_if_not_installed("org.Hs.eg.db")
+  skip_if_no_bioc("org.Hs.eg.db")
   db <- org.Hs.eg.db::org.Hs.eg.db
   keys <- c("1", "2", "9")
   expect_identical(
@@ -24,8 +24,8 @@ test_that("other lookups fall back to mapIds()", {
 })
 
 test_that("get_GO_data() builds the same GO data with the SQL lookup", {
-  testthat::skip_if_not_installed("clusterProfiler")
-  testthat::skip_if_not_installed("org.Hs.eg.db")
+  skip_if_no_bioc("clusterProfiler")
+  skip_if_no_bioc("org.Hs.eg.db")
   original <- get("get_GO_data", envir = asNamespace("clusterProfiler"))
   if (gocache_is_replacement(original)) {
     original <- gocache_original("clusterProfiler", "get_GO_data")
@@ -47,8 +47,8 @@ test_that("get_GO_data() builds the same GO data with the SQL lookup", {
 })
 
 test_that("information content matches GOSemSim", {
-  testthat::skip_if_not_installed("GOSemSim")
-  testthat::skip_if_not_installed("org.Hs.eg.db")
+  skip_if_no_bioc("GOSemSim")
+  skip_if_no_bioc("org.Hs.eg.db")
   original <- get("computeIC", envir = asNamespace("GOSemSim"))
   if (gocache_is_replacement(original)) {
     original <- gocache_original("GOSemSim", "computeIC")

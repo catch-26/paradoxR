@@ -25,6 +25,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      PARADOXR_REQUIRE_BIOC: ${{ matrix.config.ggplot2 == 'latest' && 'true' || 'false' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +43,14 @@ jobs:
             any::testthat
             ${{ matrix.config.ggplot2 != 'latest' && format('ggplot2@{0}', matrix.config.ggplot2) || '' }}
           needs: check
+
+      - name: Load the enrichment packages
+        if: matrix.config.ggplot2 == 'latest'
+        shell: Rscript {0}
+        run: |
+          pkgs <- c("AnnotationDbi", "DBI", "GO.db", "GOSemSim", "clusterProfiler", "org.Hs.eg.db")
+          failed <- Filter(\(p) inherits(try(loadNamespace(p)), "try-error"), pkgs)
+          if (length(failed) > 0) stop("cannot load: ", paste(failed, collapse = ", "))
 
       - uses: r-lib/actions/check-r-package@v2
         env:

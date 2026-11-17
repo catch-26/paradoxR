@@ -20,8 +20,8 @@ test_that("the in-memory store keeps the most recently used GO data", {
 })
 
 test_that("enrichGO() returns the same result with and without the cache", {
-  testthat::skip_if_not_installed("clusterProfiler")
-  testthat::skip_if_not_installed("org.Hs.eg.db")
+  skip_if_no_bioc("clusterProfiler")
+  skip_if_no_bioc("org.Hs.eg.db")
   dir <- tempfile("gocache")
   old <- options(paradoxR.go_cache_dir = dir)
   on.exit({ use_go_cache(); options(old); unlink(dir, recursive = TRUE) }, add = TRUE)
@@ -35,15 +35,19 @@ test_that("enrichGO() returns the same result with and without the cache", {
   expect_true(length(list.files(dir, pattern = "^go-data-")) == 1L)
   expect_true(length(list.files(dir, pattern = "^go-result-")) == 1L)
   expect_identical(run()@result, cached@result)
+  gocache$memory_data <- list()
+  gocache$memory_result <- list()
+  expect_identical(run()@result, cached@result)
+  expect_length(list.files(dir, pattern = "\\.tmp$"), 0L)
   reset_go_cache()
   expect_false(gocache_patched())
   expect_identical(run()@result, cached@result)
 })
 
 test_that("simplify() and Wang similarity give the same result with and without the replacements", {
-  testthat::skip_if_not_installed("clusterProfiler")
-  testthat::skip_if_not_installed("GOSemSim")
-  testthat::skip_if_not_installed("org.Hs.eg.db")
+  skip_if_no_bioc("clusterProfiler")
+  skip_if_no_bioc("GOSemSim")
+  skip_if_no_bioc("org.Hs.eg.db")
   dir <- tempfile("gocache")
   old <- options(paradoxR.go_cache_dir = dir)
   on.exit({ use_go_cache(); options(old); unlink(dir, recursive = TRUE) }, add = TRUE)
@@ -62,8 +66,8 @@ test_that("simplify() and Wang similarity give the same result with and without 
 })
 
 test_that("KEGG tables are cached per release and reused offline", {
-  testthat::skip_if_not_installed("clusterProfiler")
-  testthat::skip_if_not_installed("GO.db")
+  skip_if_no_bioc("clusterProfiler")
+  skip_if_no_bioc("GO.db")
   dir <- tempfile("gocache")
   old <- options(paradoxR.go_cache_dir = dir)
   saved <- as.list(gocache)[c("original", "kegg_release", "kegg_release_time")]
@@ -98,8 +102,8 @@ test_that("KEGG tables are cached per release and reused offline", {
 })
 
 test_that("cached GO data stays separate per ontology across calls", {
-  testthat::skip_if_not_installed("clusterProfiler")
-  testthat::skip_if_not_installed("org.Hs.eg.db")
+  skip_if_no_bioc("clusterProfiler")
+  skip_if_no_bioc("org.Hs.eg.db")
   dir <- tempfile("gocache")
   old <- options(paradoxR.go_cache_dir = dir)
   on.exit({ options(old); unlink(dir, recursive = TRUE) }, add = TRUE)
@@ -146,7 +150,7 @@ test_that("a failing replacement falls back to the original function", {
 })
 
 test_that("replacements left by an earlier paradoxR load can be reverted and re-applied", {
-  testthat::skip_if_not_installed("clusterProfiler")
+  skip_if_no_bioc("clusterProfiler")
   loadNamespace("clusterProfiler")
   on.exit(use_go_cache(), add = TRUE)
   reset_go_cache()
