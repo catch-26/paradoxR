@@ -44,13 +44,17 @@ jobs:
             ${{ matrix.config.ggplot2 != 'latest' && format('ggplot2@{0}', matrix.config.ggplot2) || '' }}
           needs: check
 
-      - name: Install DOSE from the Bioconductor release branch on Windows
+      - name: Install a clusterProfiler that loads on Windows
         if: runner.os == 'Windows' && matrix.config.ggplot2 == 'latest'
         shell: Rscript {0}
         run: |
-          pak::pkg_install("git::https://git.bioconductor.org/packages/DOSE@RELEASE_3_23", dependencies = FALSE)
-          print(utils::packageVersion("DOSE"))
-          print("geneID" %in% getNamespaceExports("DOSE"))
+          loads <- function() !inherits(try(loadNamespace("clusterProfiler"), silent = TRUE), "try-error")
+          archive <- "https://bioconductor.org/packages/3.23/bioc/src/contrib/Archive/clusterProfiler/clusterProfiler_"
+          for (version in c("4.20.2", "4.20.0")) {
+            if (callr::r(loads)) break
+            utils::install.packages(paste0(archive, version, ".tar.gz"), repos = NULL, type = "source")
+          }
+          print(utils::packageVersion("clusterProfiler"))
 
       - name: Load the enrichment packages
         if: matrix.config.ggplot2 == 'latest'
