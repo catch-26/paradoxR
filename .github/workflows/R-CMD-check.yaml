@@ -42,7 +42,7 @@ jobs:
             any::rcmdcheck
             any::testthat
             ${{ matrix.config.ggplot2 != 'latest' && format('ggplot2@{0}', matrix.config.ggplot2) || '' }}
-            ${{ runner.os == 'Windows' && 'bioc::DOSE?source' || '' }}
+            ${{ runner.os == 'Windows' && 'bioc::DOSE?source&reinstall' || '' }}
           needs: check
 
       - name: Load the enrichment packages
