@@ -1,12 +1,14 @@
 Package: paradoxR
-Title: Drop-in Colour Palettes and Scales for 'ggplot2'
+Title: Colour Palettes for 'ggplot2' and Faster 'Bioconductor' Analysis
 Version: 26.11.0
 Authors@R: 
     person("catch-26", email = "59668327+catch-26@users.noreply.github.com", role = c("aut", "cre"))
 Description: Provides drop-in replacements for the default colour scales of
-    'ggplot2'. The sienna palette family covers discrete, continuous, binned
-    and diverging scales, a global switch for every plot, and helpers for
-    gradients and single-hue ramps.
+    'ggplot2', with discrete, continuous, binned and diverging scales and one
+    switch for every plot. Also makes 'clusterProfiler', 'GOSemSim', 'DESeq2'
+    and 'sva' faster when loaded: GO and KEGG data are cached on disk, and
+    slow internal steps are replaced by vectorised code. Results are identical
+    to the original functions.
 License: Apache License (>= 2)
 URL: https://github.com/catch-26/paradoxR
 BugReports: https://github.com/catch-26/paradoxR/issues
