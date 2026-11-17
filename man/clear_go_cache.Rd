@@ -13,7 +13,8 @@ The number of files deleted, invisibly.
 Deletes the GO annotation data and \code{enrichGO()} results that paradoxR keeps
 in memory and on disk. The cache lives in
 \code{tools::R_user_dir("paradoxR", "cache")}, or in the directory set with
-\code{options(paradoxR.go_cache_dir = )}.
+\code{options(paradoxR.cache_dir = )} (the older name \code{paradoxR.go_cache_dir}
+still works).
 }
 \examples{
 clear_go_cache()

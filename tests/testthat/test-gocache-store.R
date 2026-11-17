@@ -1,5 +1,5 @@
 local_cache_dir <- function(dir = tempfile("gocache"), env = parent.frame()) {
-  old <- options(paradoxR.go_cache_dir = dir)
+  old <- options(paradoxR.cache_dir = dir)
   saved <- list(data = gocache$memory_data, result = gocache$memory_result)
   restore <- function() {
     options(old)
@@ -14,7 +14,7 @@ local_cache_dir <- function(dir = tempfile("gocache"), env = parent.frame()) {
 }
 
 test_that("the default cache directory is the platform user cache directory", {
-  old <- options(paradoxR.go_cache_dir = NULL)
+  old <- options(paradoxR.cache_dir = NULL)
   on.exit(options(old), add = TRUE)
   expect_identical(gocache_dir(), tools::R_user_dir("paradoxR", which = "cache"))
   cache_root <- tempfile("usercache")

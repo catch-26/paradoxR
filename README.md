@@ -71,8 +71,8 @@ reset_ggplot2_palette()
 | `reset_go_cache()` | Restores the original functions. |
 | `use_go_cache()` | Applies the faster functions again. |
 | `clear_go_cache()` | Deletes the GO and KEGG cache. |
-| `options(paradoxR.go_cache = FALSE)` | Set before loading paradoxR to keep the original functions. |
-| `options(paradoxR.go_cache_dir = )` | Sets the cache directory. The default is `tools::R_user_dir("paradoxR", "cache")`. |
+| `options(paradoxR.speedups = FALSE)` | Set before loading paradoxR to keep all original functions, including DESeq2 and sva. |
+| `options(paradoxR.cache_dir = )` | Sets the cache directory. The default is `tools::R_user_dir("paradoxR", "cache")`. |
 
 ```r
 library(paradoxR)

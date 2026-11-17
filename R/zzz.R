@@ -1,5 +1,5 @@
 .onLoad <- function(libname, pkgname) {
-  if (isTRUE(getOption("paradoxR.go_cache", TRUE))) {
+  if (speedups_enabled()) {
     gocache_use_safely()
   }
 }

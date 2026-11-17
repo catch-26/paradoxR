@@ -1,7 +1,7 @@
 gocache <- new.env(parent = emptyenv())
 
 gocache_dir <- function() {
-  getOption("paradoxR.go_cache_dir", tools::R_user_dir("paradoxR", which = "cache"))
+  compat_option("paradoxR.cache_dir", "paradoxR.go_cache_dir", tools::R_user_dir("paradoxR", which = "cache"))
 }
 
 gocache_memory_max <- function(key) {
@@ -116,7 +116,8 @@ gocache_remember <- function(key, value) {
 #' Deletes the GO annotation data and `enrichGO()` results that paradoxR keeps
 #' in memory and on disk. The cache lives in
 #' `tools::R_user_dir("paradoxR", "cache")`, or in the directory set with
-#' `options(paradoxR.go_cache_dir = )`.
+#' `options(paradoxR.cache_dir = )` (the older name `paradoxR.go_cache_dir`
+#' still works).
 #'
 #' @return The number of files deleted, invisibly.
 #' @export

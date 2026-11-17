@@ -50,7 +50,8 @@ has been updated; when KEGG is unreachable, the cached tables are used.
 }
 
 Called automatically when paradoxR is loaded, unless
-\code{options(paradoxR.go_cache = FALSE)} is set beforehand. The cache is keyed
+\code{options(paradoxR.speedups = FALSE)} is set beforehand (the older name
+\code{paradoxR.go_cache} still works). The cache is keyed
 by the clusterProfiler and GO.db versions and the OrgDb database file, so
 updating any of them starts a fresh cache. The \code{simplify()}, similarity,
 DESeq2 and sva replacements apply only to the package versions they were

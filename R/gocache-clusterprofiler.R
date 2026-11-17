@@ -210,7 +210,8 @@ gocache_revert <- function(patch) {
 #'   has been updated; when KEGG is unreachable, the cached tables are used.
 #'
 #' Called automatically when paradoxR is loaded, unless
-#' `options(paradoxR.go_cache = FALSE)` is set beforehand. The cache is keyed
+#' `options(paradoxR.speedups = FALSE)` is set beforehand (the older name
+#' `paradoxR.go_cache` still works). The cache is keyed
 #' by the clusterProfiler and GO.db versions and the OrgDb database file, so
 #' updating any of them starts a fresh cache. The `simplify()`, similarity,
 #' DESeq2 and sva replacements apply only to the package versions they were
@@ -294,7 +295,7 @@ gocache_use_safely <- function() {
 }
 
 gocache_on_load <- function(...) {
-  if (isTRUE(getOption("paradoxR.go_cache", TRUE))) {
+  if (speedups_enabled()) {
     gocache_use_safely()
   }
 }

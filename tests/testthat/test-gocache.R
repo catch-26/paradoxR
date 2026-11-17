@@ -1,6 +1,6 @@
 test_that("the cache stores, reloads from disk and clears", {
   cache_dir <- tempfile("gocache")
-  old <- options(paradoxR.go_cache_dir = cache_dir)
+  old <- options(paradoxR.cache_dir = cache_dir)
   on.exit({ options(old); unlink(cache_dir, recursive = TRUE) }, add = TRUE)
   gocache_set("go-result-a", list(x = 1))
   expect_identical(gocache_get("go-result-a"), list(x = 1))
@@ -12,7 +12,7 @@ test_that("the cache stores, reloads from disk and clears", {
 })
 
 test_that("the in-memory store keeps the most recently used GO data", {
-  old <- options(paradoxR.go_cache_dir = tempfile("gocache"))
+  old <- options(paradoxR.cache_dir = tempfile("gocache"))
   on.exit({ gocache$memory_data <- list(); options(old) }, add = TRUE)
   gocache$memory_data <- list()
   for (k in paste0("go-data-", 1:4)) gocache_remember(k, k)
@@ -23,7 +23,7 @@ test_that("enrichGO() returns the same result with and without the cache", {
   skip_if_no_bioc("clusterProfiler")
   skip_if_no_bioc("org.Hs.eg.db")
   dir <- tempfile("gocache")
-  old <- options(paradoxR.go_cache_dir = dir)
+  old <- options(paradoxR.cache_dir = dir)
   on.exit({ use_go_cache(); options(old); unlink(dir, recursive = TRUE) }, add = TRUE)
   genes <- AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = "ENTREZID")[1:300]
   run <- function() {
@@ -49,7 +49,7 @@ test_that("simplify() and Wang similarity give the same result with and without 
   skip_if_no_bioc("GOSemSim")
   skip_if_no_bioc("org.Hs.eg.db")
   dir <- tempfile("gocache")
-  old <- options(paradoxR.go_cache_dir = dir)
+  old <- options(paradoxR.cache_dir = dir)
   on.exit({ use_go_cache(); options(old); unlink(dir, recursive = TRUE) }, add = TRUE)
   genes <- AnnotationDbi::mapIds(org.Hs.eg.db::org.Hs.eg.db, "GO:0006955", "ENTREZID", "GOALL", multiVals = "list")[[1]][1:150]
   use_go_cache()
@@ -69,7 +69,7 @@ test_that("KEGG tables are cached per release and reused offline", {
   skip_if_no_bioc("clusterProfiler")
   skip_if_no_bioc("GO.db")
   dir <- tempfile("gocache")
-  old <- options(paradoxR.go_cache_dir = dir)
+  old <- options(paradoxR.cache_dir = dir)
   saved <- as.list(gocache)[c("original", "kegg_release", "kegg_release_time")]
   on.exit({
     for (name in names(saved)) gocache[[name]] <- saved[[name]]
@@ -105,7 +105,7 @@ test_that("cached GO data stays separate per ontology across calls", {
   skip_if_no_bioc("clusterProfiler")
   skip_if_no_bioc("org.Hs.eg.db")
   dir <- tempfile("gocache")
-  old <- options(paradoxR.go_cache_dir = dir)
+  old <- options(paradoxR.cache_dir = dir)
   on.exit({ options(old); unlink(dir, recursive = TRUE) }, add = TRUE)
   use_go_cache()
   get_go_data <- get("get_GO_data", envir = asNamespace("clusterProfiler"))

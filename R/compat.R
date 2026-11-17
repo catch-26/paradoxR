@@ -1,5 +1,14 @@
 # Every version switch for upstream packages lives here.
 
+# Options renamed to a general name keep their old name as a fallback.
+compat_option <- function(name, old, default) {
+  getOption(name, getOption(old, default))
+}
+
+speedups_enabled <- function() {
+  isTRUE(compat_option("paradoxR.speedups", "paradoxR.go_cache", TRUE))
+}
+
 ggplot2_has_no_scale_name <- function() {
   rlang::is_installed("ggplot2", version = "3.5.0")
 }
