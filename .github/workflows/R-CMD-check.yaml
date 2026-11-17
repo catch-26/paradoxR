@@ -43,18 +43,18 @@ jobs:
             any::testthat
             ${{ matrix.config.ggplot2 != 'latest' && format('ggplot2@{0}', matrix.config.ggplot2) || '' }}
           needs: check
+          cache-version: 2
 
-      - name: Install a clusterProfiler that loads on Windows
+      - name: Install the Bioconductor packages with BiocManager on Windows
         if: runner.os == 'Windows' && matrix.config.ggplot2 == 'latest'
         shell: Rscript {0}
         run: |
-          loads <- function() !inherits(try(loadNamespace("clusterProfiler"), silent = TRUE), "try-error")
-          archive <- "https://bioconductor.org/packages/3.23/bioc/src/contrib/Archive/clusterProfiler/clusterProfiler_"
-          for (version in c("4.20.2", "4.20.0")) {
-            if (callr::r(loads)) break
-            utils::install.packages(paste0(archive, version, ".tar.gz"), repos = NULL, type = "source")
-          }
+          utils::install.packages("BiocManager")
+          print(BiocManager::version())
+          BiocManager::install(c("clusterProfiler", "DOSE", "enrichplot", "GOSemSim", "AnnotationDbi", "GO.db", "org.Hs.eg.db"), ask = FALSE, update = TRUE, force = TRUE)
           print(utils::packageVersion("clusterProfiler"))
+          print(utils::packageVersion("DOSE"))
+          print(BiocManager::valid())
 
       - name: Load the enrichment packages
         if: matrix.config.ggplot2 == 'latest'
