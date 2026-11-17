@@ -49,7 +49,7 @@ reset_ggplot2_palette()
 - **Information content:** `GOSemSim::godata()` calculates information content in one vectorised step.
 - **KEGG download cache:** `clusterProfiler::enrichKEGG()`, `clusterProfiler::gseKEGG()`, `clusterProfiler::enrichMKEGG()` and `clusterProfiler::gseMKEGG()` download each KEGG table one time and keep it on disk for all species, key types and sessions. paradoxR compares the cache with the KEGG release dates at most one time each hour and downloads again when KEGG changes. When KEGG is not available, paradoxR uses the cached tables.
 
-**First-call times** in a new R session with an empty cache, original function against paradoxR. The results are identical. Setup: Bioconductor 3.23, R 4.6.2, clusterProfiler 4.20.3, GOSemSim 2.38.3, org.Hs.eg.db, 315 Entrez IDs, 732 BP terms in the `enrichGO()` result. `DESeq2::DESeq()`: DESeq2 1.52.0, 30,000 simulated genes, 24 samples in 8 groups of 3.
+**First-call times** in a new R session with an empty cache, original function against paradoxR. The results are identical. Setup: Bioconductor 3.23, R 4.6.2, clusterProfiler 4.20.3, GOSemSim 2.38.3, org.Hs.eg.db, 315 Entrez IDs, 732 BP terms in the `enrichGO()` result. Mouse row: org.Mm.eg.db, 400 Ensembl IDs, 956 BP terms. `DESeq2::DESeq()`: DESeq2 1.52.0, 30,000 simulated genes, 24 samples in 8 groups of 3.
 
 | Call | Original | paradoxR | Speed-up |
 |---|---|---|---|
@@ -57,6 +57,7 @@ reset_ggplot2_palette()
 | `clusterProfiler::enrichGO(ont = "BP")` | 19.49 s | 6.02 s | 3.2x |
 | `clusterProfiler::enrichGO(ont = "ALL")` | 25.52 s | 8.65 s | 3x |
 | `clusterProfiler::enrichGO(ont = "BP")`, second gene list | 2.03 s | 0.46 s | 4.4x |
+| `clusterProfiler::enrichGO(ont = "BP", keyType = "ENSEMBL", readable = TRUE)`, org.Mm.eg.db | 39.42 s | 15.54 s | 2.5x |
 | `clusterProfiler::simplify()` | 51.24 s | 2.11 s | 24x |
 | `GOSemSim::mgoSim(measure = "Wang")` | 29.99 s | 0.69 s | 43x |
 | `enrichplot::pairwise_termsim(method = "Wang")` | 1.97 s | 0.13 s | 15x |
