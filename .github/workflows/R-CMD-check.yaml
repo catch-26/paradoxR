@@ -51,16 +51,16 @@ jobs:
         run: |
           utils::install.packages("BiocManager")
           print(BiocManager::version())
-          BiocManager::install(c("clusterProfiler", "DOSE", "enrichplot", "GOSemSim", "AnnotationDbi", "GO.db", "org.Hs.eg.db"), ask = FALSE, update = TRUE, force = TRUE)
+          BiocManager::install(c("clusterProfiler", "DOSE", "enrichplot", "GOSemSim", "AnnotationDbi", "GO.db", "org.Hs.eg.db", "DESeq2", "sva"), ask = FALSE, update = TRUE, force = TRUE)
           print(utils::packageVersion("clusterProfiler"))
           print(utils::packageVersion("DOSE"))
           print(BiocManager::valid())
 
-      - name: Load the enrichment packages
+      - name: Load the Bioconductor packages
         if: matrix.config.ggplot2 == 'latest'
         shell: Rscript {0}
         run: |
-          pkgs <- c("AnnotationDbi", "DBI", "GO.db", "GOSemSim", "clusterProfiler", "org.Hs.eg.db")
+          pkgs <- c("AnnotationDbi", "DBI", "GO.db", "GOSemSim", "clusterProfiler", "org.Hs.eg.db", "DESeq2", "S4Vectors", "SummarizedExperiment", "sva")
           failed <- Filter(\(p) inherits(try(loadNamespace(p)), "try-error"), pkgs)
           if (length(failed) > 0) stop("cannot load: ", paste(failed, collapse = ", "))
 
