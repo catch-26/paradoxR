@@ -14,3 +14,4 @@
 - Enrichment: `GOSemSim::godata(computeIC = TRUE)` on Bioconductor 3.23 calculates information content for BP in about 7 seconds instead of 30.
 - Enrichment: on Bioconductor 3.23, rerunning `clusterProfiler::enrichGO()` on the same genes with other p-value or q-value cutoffs also returns at once.
 - Enrichment: on Bioconductor 3.23, the first `clusterProfiler::enrichGO()` call for an OrgDb builds the GO annotation with SQL, about 8 times faster for BP.
+- Enrichment: the GO and KEGG cache works the same on Linux, macOS and Windows: a file another R session is reading no longer causes a warning, a damaged cache file is rebuilt, and `clear_go_cache()` also removes unfinished writes.

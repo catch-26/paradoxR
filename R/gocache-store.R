@@ -54,29 +54,47 @@ gocache_get <- function(key) {
     return(store[[key]])
   }
   path <- gocache_path(key)
-  if (!file.exists(path)) {
-    return(NULL)
+  drop <- function(condition) {
+    try(unlink(path), silent = TRUE)
+    NULL
   }
-  value <- tryCatch(readRDS(path), error = function(e) NULL)
-  if (!is.null(value)) {
-    gocache_remember(key, value)
-  }
+  value <- tryCatch(
+    if (file.exists(path)) readRDS(path) else NULL,
+    error = drop,
+    warning = drop
+  )
+  gocache_remember(key, value)
   value
 }
 
 gocache_set <- function(key, value) {
   gocache_remember(key, value)
-  dir.create(gocache_dir(), recursive = TRUE, showWarnings = FALSE)
-  path <- gocache_path(key)
-  tmp <- paste0(path, ".tmp", Sys.getpid())
+  dir <- gocache_dir()
+  tmp <- character()
   ok <- tryCatch({
+    dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+    tmp <- tempfile(paste0(key, "-"), tmpdir = dir, fileext = ".tmp")
     saveRDS(value, tmp)
-    file.rename(tmp, path)
-  }, error = function(e) FALSE)
+    gocache_move(tmp, gocache_path(key))
+  }, error = function(e) FALSE, warning = function(w) FALSE)
   if (!isTRUE(ok)) {
-    unlink(tmp)
+    try(unlink(tmp), silent = TRUE)
   }
   invisible(value)
+}
+
+gocache_move <- function(from, to) {
+  if (suppressWarnings(file.rename(from, to))) {
+    return(TRUE)
+  }
+  if (file.exists(to)) {
+    unlink(to)
+    if (suppressWarnings(file.rename(from, to))) {
+      return(TRUE)
+    }
+  }
+  unlink(from)
+  file.exists(to)
 }
 
 gocache_remember <- function(key, value) {
@@ -108,6 +126,7 @@ clear_go_cache <- function() {
   gocache$memory_data <- list()
   gocache$memory_result <- list()
   files <- list.files(gocache_dir(), pattern = "^go-.*\\.rds$", full.names = TRUE)
-  unlink(files)
+  partial <- list.files(gocache_dir(), pattern = "^go-.*\\.tmp$", full.names = TRUE)
+  unlink(c(files, partial))
   invisible(length(files))
 }
