@@ -5,6 +5,13 @@
 ## Install
 
 ```r
+pak::repo_add(catch26 = "https://catch-26.r-universe.dev")
+pak::pak("paradoxR")
+```
+
+Windows and macOS get a prebuilt binary, no Rtools or Xcode needed. The development version from GitHub needs Rtools on Windows:
+
+```r
 pak::pak("catch-26/paradoxR")
 ```
 
