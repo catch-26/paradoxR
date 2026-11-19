@@ -197,12 +197,10 @@ gocache_revert <- function(patch) {
 #'   results are identical;
 #' * `DESeq2::DESeq()` computes the trimmed means behind Cook's distances
 #'   with one sort per matrix instead of one `mean(trim = )` call per gene;
-#'   a gene's value is used only where it provably equals the original, and
-#'   `options(paradoxR.deseq2 = FALSE)` keeps the original;
+#'   a gene's value is used only where it provably equals the original;
 #' * `sva::ComBat_seq()` moves counts to their adjusted quantiles in one
 #'   vectorised `stats::pnbinom()` and `stats::qnbinom()` call instead of one
-#'   call per gene and sample; `options(paradoxR.sva = FALSE)` keeps the
-#'   original;
+#'   call per gene and sample;
 #' * every KEGG table that `enrichKEGG()`, `gseKEGG()`, `enrichMKEGG()` and
 #'   `gseMKEGG()` download from the KEGG REST API is kept on disk per species,
 #'   KEGG database and key type, so switching species or key type, or starting
@@ -210,35 +208,96 @@ gocache_revert <- function(patch) {
 #'   against KEGG's release dates once an hour and downloads again when KEGG
 #'   has been updated; when KEGG is unreachable, the cached tables are used.
 #'
-#' Called automatically when paradoxR is loaded, unless
-#' `options(paradoxR.speedups = FALSE)` is set beforehand (the older name
-#' `paradoxR.go_cache` still works). The cache is keyed
-#' by the clusterProfiler and GO.db versions and the OrgDb database file, so
-#' updating any of them starts a fresh cache. The `simplify()`, similarity,
-#' DESeq2 and sva replacements apply only to the package versions they were
-#' checked against; other versions keep their own code. Set the DESeq2 and
-#' sva options before those packages load, or call `reset_speedups()` and
-#' `use_speedups()` after setting them.
-#' `reset_speedups()` restores the original functions and [clear_cache()]
-#' deletes the cache.
+#' Called automatically when paradoxR is loaded. Packages loaded later are
+#' sped up as they load. The cache is keyed by the clusterProfiler and GO.db
+#' versions and the OrgDb database file, so updating any of them starts a
+#' fresh cache. The `simplify()`, similarity, DESeq2 and sva replacements
+#' apply only to the package versions they were checked against; other
+#' versions keep their own code.
 #'
-#' @return `TRUE` invisibly when clusterProfiler was changed, `FALSE` when it
-#'   is not loaded yet; the change is then applied when it loads.
+#' `reset_speedups()` restores the original functions, for example to compare
+#' results against the original code. With `packages`, only the functions of
+#' those packages are restored and the others stay fast. A restored package
+#' stays original for the rest of the session, also if it is loaded later,
+#' until `use_speedups()` is called for it. [clear_cache()] deletes the cache.
+#'
+#' To keep the original functions from the start of a session, set
+#' `options(paradoxR.speedups = FALSE)` (all packages),
+#' `options(paradoxR.deseq2 = FALSE)` or `options(paradoxR.sva = FALSE)`
+#' before loading paradoxR.
+#'
+#' @param packages Names of the packages to speed up or restore, any of
+#'   `"clusterProfiler"`, `"DOSE"`, `"GOSemSim"`, `"DESeq2"` and `"sva"`.
+#'   `NULL`, the default, means all of them.
+#' @return `use_speedups()` returns `TRUE` invisibly when at least one function
+#'   of `packages` is replaced, `FALSE` when none is, for example because the
+#'   packages are not loaded yet; they are then sped up when they load.
+#'   `reset_speedups()` returns `TRUE` invisibly when it restored at least one
+#'   function.
 #' @export
 #' @examples
 #' use_speedups()
+#' reset_speedups("DESeq2")
+#' use_speedups("DESeq2")
 #' reset_speedups()
-use_speedups <- function() {
+#' use_speedups()
+use_speedups <- function(packages = NULL) {
+  packages <- speedups_packages(packages)
+  gocache$disabled <- setdiff(gocache$disabled, packages)
+  speedups_hook()
+  speedups_apply(packages)
+  invisible(any(speedups_patched(packages)))
+}
+
+#' @rdname use_speedups
+#' @export
+reset_speedups <- function(packages = NULL) {
+  packages <- speedups_packages(packages)
+  gocache$disabled <- union(gocache$disabled, packages)
+  invisible(speedups_revert(packages))
+}
+
+speedups_all_packages <- function() {
+  unique(vapply(gocache_patches(), `[[`, character(1), "pkg"))
+}
+
+speedups_packages <- function(packages) {
+  all <- speedups_all_packages()
+  if (is.null(packages)) {
+    return(all)
+  }
+  if (!is.character(packages) || anyNA(packages)) {
+    rlang::abort("`packages` must be a character vector of package names.")
+  }
+  found <- all[match(tolower(packages), tolower(all))]
+  if (anyNA(found)) {
+    rlang::abort(c(
+      paste0("paradoxR has no speed-ups for ", paste0("\"", packages[is.na(found)], "\"", collapse = ", "), "."),
+      i = paste0("Use one of ", paste0("\"", all, "\"", collapse = ", "), ".")
+    ))
+  }
+  unique(found)
+}
+
+speedups_select <- function(packages) {
+  Filter(function(patch) patch$pkg %in% packages, gocache_patches())
+}
+
+speedups_hook <- function() {
   if (is.null(gocache$hooked)) {
     gocache$hooked <- character()
   }
-  for (pkg in unique(vapply(gocache_patches(), `[[`, character(1), "pkg"))) {
+  for (pkg in speedups_all_packages()) {
     if (!isNamespaceLoaded(pkg) && !pkg %in% gocache$hooked) {
       setHook(packageEvent(pkg, "onLoad"), gocache_on_load)
       gocache$hooked <- c(gocache$hooked, pkg)
     }
   }
-  for (patch in gocache_patches()) {
+  invisible(NULL)
+}
+
+speedups_apply <- function(packages) {
+  for (patch in speedups_select(packages)) {
     if (isNamespaceLoaded(patch$pkg)) {
       gocache_apply(patch)
     }
@@ -246,17 +305,19 @@ use_speedups <- function() {
   if (gocache_patched()) {
     gocache_note_cutoffs()
   }
-  invisible(gocache_patched())
+  invisible(NULL)
 }
 
-#' @rdname use_speedups
-#' @export
-reset_speedups <- function() {
+speedups_revert <- function(packages) {
   changed <- FALSE
-  for (patch in gocache_patches()) {
+  for (patch in speedups_select(packages)) {
     changed <- isTRUE(gocache_revert(patch)) || changed
   }
-  invisible(changed)
+  changed
+}
+
+speedups_patched <- function(packages) {
+  vapply(speedups_select(packages), function(patch) gocache_patched(patch$pkg, patch$name), logical(1))
 }
 
 gocache_with_fallback <- function(fast, original, label) {
@@ -284,10 +345,13 @@ gocache_warn_once <- function(label, reason) {
 }
 
 gocache_use_safely <- function() {
-  tryCatch(use_speedups(), error = function(e) {
-    try(reset_speedups(), silent = TRUE)
+  tryCatch({
+    speedups_hook()
+    speedups_apply(setdiff(speedups_all_packages(), gocache$disabled))
+  }, error = function(e) {
+    try(speedups_revert(speedups_all_packages()), silent = TRUE)
     warning(
-      "paradoxR could not apply its clusterProfiler speed-ups (", conditionMessage(e), "); ",
+      "paradoxR could not apply its speed-ups (", conditionMessage(e), "); ",
       "the original functions stay in place.",
       call. = FALSE
     )

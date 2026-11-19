@@ -19,3 +19,4 @@
 - RNA-seq: with paradoxR loaded, `sva::ComBat_seq()` adjusts all counts in one vectorised step instead of one call per count, with identical results. `options(paradoxR.sva = FALSE)` keeps the original.
 - Settings: `options(paradoxR.speedups = FALSE)` turns off every speed-up and `options(paradoxR.cache_dir = )` sets the cache directory. The older names `paradoxR.go_cache` and `paradoxR.go_cache_dir` still work.
 - Settings: `use_speedups()` and `reset_speedups()` apply and remove every speed-up, and `clear_cache()` deletes the GO and KEGG cache.
+- Settings: `reset_speedups("DESeq2")` restores the original functions of one package, for example to compare results with the original code, and `use_speedups("DESeq2")` applies its speed-ups again. A restored package stays original for the rest of the session, also when it is loaded later.

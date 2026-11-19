@@ -5,13 +5,21 @@
 \alias{reset_speedups}
 \title{Apply or remove paradoxR's speed-ups}
 \usage{
-use_speedups()
+use_speedups(packages = NULL)
 
-reset_speedups()
+reset_speedups(packages = NULL)
+}
+\arguments{
+\item{packages}{Names of the packages to speed up or restore, any of
+\code{"clusterProfiler"}, \code{"DOSE"}, \code{"GOSemSim"}, \code{"DESeq2"} and \code{"sva"}.
+\code{NULL}, the default, means all of them.}
 }
 \value{
-\code{TRUE} invisibly when clusterProfiler was changed, \code{FALSE} when it
-is not loaded yet; the change is then applied when it loads.
+\code{use_speedups()} returns \code{TRUE} invisibly when at least one function
+of \code{packages} is replaced, \code{FALSE} when none is, for example because the
+packages are not loaded yet; they are then sped up when they load.
+\code{reset_speedups()} returns \code{TRUE} invisibly when it restored at least one
+function.
 }
 \description{
 \code{use_speedups()} replaces functions inside clusterProfiler, DOSE, GOSemSim,
@@ -36,12 +44,10 @@ content in \code{GOSemSim::godata()} is summed over all terms at once; the
 results are identical;
 \item \code{DESeq2::DESeq()} computes the trimmed means behind Cook's distances
 with one sort per matrix instead of one \code{mean(trim = )} call per gene;
-a gene's value is used only where it provably equals the original, and
-\code{options(paradoxR.deseq2 = FALSE)} keeps the original;
+a gene's value is used only where it provably equals the original;
 \item \code{sva::ComBat_seq()} moves counts to their adjusted quantiles in one
 vectorised \code{stats::pnbinom()} and \code{stats::qnbinom()} call instead of one
-call per gene and sample; \code{options(paradoxR.sva = FALSE)} keeps the
-original;
+call per gene and sample;
 \item every KEGG table that \code{enrichKEGG()}, \code{gseKEGG()}, \code{enrichMKEGG()} and
 \code{gseMKEGG()} download from the KEGG REST API is kept on disk per species,
 KEGG database and key type, so switching species or key type, or starting
@@ -50,19 +56,28 @@ against KEGG's release dates once an hour and downloads again when KEGG
 has been updated; when KEGG is unreachable, the cached tables are used.
 }
 
-Called automatically when paradoxR is loaded, unless
-\code{options(paradoxR.speedups = FALSE)} is set beforehand (the older name
-\code{paradoxR.go_cache} still works). The cache is keyed
-by the clusterProfiler and GO.db versions and the OrgDb database file, so
-updating any of them starts a fresh cache. The \code{simplify()}, similarity,
-DESeq2 and sva replacements apply only to the package versions they were
-checked against; other versions keep their own code. Set the DESeq2 and
-sva options before those packages load, or call \code{reset_speedups()} and
-\code{use_speedups()} after setting them.
-\code{reset_speedups()} restores the original functions and \code{\link[=clear_cache]{clear_cache()}}
-deletes the cache.
+Called automatically when paradoxR is loaded. Packages loaded later are
+sped up as they load. The cache is keyed by the clusterProfiler and GO.db
+versions and the OrgDb database file, so updating any of them starts a
+fresh cache. The \code{simplify()}, similarity, DESeq2 and sva replacements
+apply only to the package versions they were checked against; other
+versions keep their own code.
+
+\code{reset_speedups()} restores the original functions, for example to compare
+results against the original code. With \code{packages}, only the functions of
+those packages are restored and the others stay fast. A restored package
+stays original for the rest of the session, also if it is loaded later,
+until \code{use_speedups()} is called for it. \code{\link[=clear_cache]{clear_cache()}} deletes the cache.
+
+To keep the original functions from the start of a session, set
+\code{options(paradoxR.speedups = FALSE)} (all packages),
+\code{options(paradoxR.deseq2 = FALSE)} or \code{options(paradoxR.sva = FALSE)}
+before loading paradoxR.
 }
 \examples{
 use_speedups()
+reset_speedups("DESeq2")
+use_speedups("DESeq2")
 reset_speedups()
+use_speedups()
 }
