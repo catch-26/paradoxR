@@ -53,6 +53,7 @@ test_that("simplify() and Wang similarity give the same result with and without 
   on.exit({ use_speedups(); options(old); unlink(dir, recursive = TRUE) }, add = TRUE)
   genes <- AnnotationDbi::mapIds(org.Hs.eg.db::org.Hs.eg.db, "GO:0006955", "ENTREZID", "GOALL", multiVals = "list")[[1]][1:150]
   use_speedups()
+  testthat::skip_if_not(gocache_patched("GOSemSim", "wangMethod"), "Wang port not verified for this GOSemSim version")
   ego <- clusterProfiler::enrichGO(genes, org.Hs.eg.db::org.Hs.eg.db, ont = "MF")
   ids <- utils::head(as.data.frame(ego)$ID, 40)
   testthat::skip_if(length(ids) < 5)
