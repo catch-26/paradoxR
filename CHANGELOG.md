@@ -3,19 +3,19 @@
 - New package paradoxR, installed with `pak::pak("catch-26/paradoxR")`.
 - Palette family: the sienna palette replaces ggplot2's default colours. `use_sienna_palette()` switches every plot, and `reset_ggplot2_palette()` switches back.
 - Palette family: `scale_colour_sienna_d()`, `_c()`, `_b()` and `_div()` and their fill forms replace ggplot2's discrete, continuous, binned and diverging colour scales.
-- Enrichment: loading paradoxR makes `clusterProfiler::enrichGO()` keep its GO annotation on disk and remember each result, so repeated and later-session calls return in under a second. `reset_go_cache()` switches back and `clear_go_cache()` deletes the cache.
+- Enrichment: loading paradoxR makes `clusterProfiler::enrichGO()` keep its GO annotation on disk and remember each result, so repeated and later-session calls return in under a second. `reset_speedups()` switches back and `clear_cache()` deletes the cache.
 - Enrichment: with paradoxR loaded, `clusterProfiler::simplify()` and Wang similarity in GOSemSim and enrichplot run about 10 times faster with identical results.
 - Enrichment: the first `enrichGO()`, `gseGO()` or `groupGO()` call for an OrgDb builds its GO annotation 3 to 5 times faster, with identical results.
 - Enrichment: `GOSemSim::godata()` computes information content for BP in about 5 s instead of 24 s, with identical results.
 - Enrichment: with paradoxR loaded, `clusterProfiler::enrichKEGG()`, `gseKEGG()`, `enrichMKEGG()` and `gseMKEGG()` keep their KEGG downloads on disk and refresh them only when KEGG releases an update, so later calls, other key types and new R sessions skip the download.
 - Enrichment: rerunning `clusterProfiler::enrichGO()` on the same genes with other p-value or q-value cutoffs returns at once, and other gene set sizes or adjustment methods take under a second. If a sped-up function fails, the original runs instead.
-- Enrichment: unloading paradoxR restores the original clusterProfiler, DOSE and GOSemSim functions, and reloading it in the same session no longer breaks `reset_go_cache()`.
+- Enrichment: unloading paradoxR restores the original clusterProfiler, DOSE and GOSemSim functions, and reloading it in the same session no longer breaks `reset_speedups()`.
 - Enrichment: the faster `simplify()` and Wang similarity also work with Bioconductor 3.23 (clusterProfiler 4.20, GOSemSim 2.38).
 - Enrichment: `GOSemSim::godata(computeIC = TRUE)` on Bioconductor 3.23 calculates information content for BP in about 7 seconds instead of 30.
 - Enrichment: on Bioconductor 3.23, rerunning `clusterProfiler::enrichGO()` on the same genes with other p-value or q-value cutoffs also returns at once.
 - Enrichment: on Bioconductor 3.23, the first `clusterProfiler::enrichGO()` call for an OrgDb builds the GO annotation with SQL, about 8 times faster for BP.
-- Enrichment: the GO and KEGG cache works the same on Linux, macOS and Windows: a file another R session is reading no longer causes a warning, a damaged cache file is rebuilt, and `clear_go_cache()` also removes unfinished writes.
+- Enrichment: the GO and KEGG cache works the same on Linux, macOS and Windows: a file another R session is reading no longer causes a warning, a damaged cache file is rebuilt, and `clear_cache()` also removes unfinished writes.
 - RNA-seq: with paradoxR loaded, `DESeq2::DESeq()` computes the trimmed means behind Cook's distances with one sort per matrix instead of one call per gene, with identical results. `options(paradoxR.deseq2 = FALSE)` keeps the original.
 - RNA-seq: with paradoxR loaded, `sva::ComBat_seq()` adjusts all counts in one vectorised step instead of one call per count, with identical results. `options(paradoxR.sva = FALSE)` keeps the original.
 - Settings: `options(paradoxR.speedups = FALSE)` turns off every speed-up and `options(paradoxR.cache_dir = )` sets the cache directory. The older names `paradoxR.go_cache` and `paradoxR.go_cache_dir` still work.
-- Settings: `use_speedups()` and `reset_speedups()` apply and remove every speed-up, and `clear_cache()` deletes the GO and KEGG cache. The older names `use_go_cache()`, `reset_go_cache()` and `clear_go_cache()` still work.
+- Settings: `use_speedups()` and `reset_speedups()` apply and remove every speed-up, and `clear_cache()` deletes the GO and KEGG cache.
