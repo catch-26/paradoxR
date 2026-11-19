@@ -1,6 +1,6 @@
 <h3 align="center">paradoxR</h3>
 
-<p align="center">Drop-in colour palettes for ggplot2, faster GO and KEGG enrichment for clusterProfiler, and faster DESeq2 and sva.</p>
+<p align="center">Drop-in colour palettes for ggplot2, faster GO and KEGG enrichment with clusterProfiler, and faster DESeq2 and sva.</p>
 
 ## Install
 
@@ -63,16 +63,6 @@ reset_ggplot2_palette()
 | `enrichplot::pairwise_termsim(method = "Wang")` | 1.97 s | 0.13 s | 15x |
 | `GOSemSim::godata(ont = "BP", computeIC = TRUE)` | 25.25 s | 5.80 s | 4.4x |
 
-**Fallback to the original functions:** paradoxR replaces an upstream function only when the installed code is a version that paradoxR was verified against. For all other versions, the original function runs. When a replacement fails, the original function runs for that call and paradoxR shows one warning.
-
-| Control | Effect |
-|---|---|
-| `reset_speedups()` | Restores the original functions. |
-| `use_speedups()` | Applies the faster functions again. |
-| `clear_cache()` | Deletes the GO and KEGG cache. |
-| `options(paradoxR.speedups = FALSE)` | Set before loading paradoxR to keep all original functions, including DESeq2 and sva. |
-| `options(paradoxR.cache_dir = )` | Sets the cache directory. The default is `tools::R_user_dir("paradoxR", "cache")`. |
-
 ```r
 library(paradoxR)
 genes <- AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = "ENTREZID")[1:300]
@@ -89,7 +79,7 @@ kk <- clusterProfiler::enrichKEGG(genes, organism = "hsa")
 
 ## RNA-seq
 
-**Loading paradoxR also makes DESeq2 and sva faster, with results identical to the original functions.** You do not change your code.
+**Loading paradoxR makes DESeq2 and sva faster, with results identical to the original functions.** You do not change your code.
 
 - **DESeq2:** `DESeq2::DESeq()` calculates the trimmed means for Cook's distances with one sort for each matrix instead of one call for each gene. The speed-up is largest with few samples in each group of the design. paradoxR uses a gene's value only where it is provably equal to the original; for all other genes, the original calculation runs.
 - **sva:** `sva::ComBat_seq()` adjusts all counts in one vectorised step instead of one call for each count.
@@ -106,12 +96,34 @@ kk <- clusterProfiler::enrichKEGG(genes, organism = "hsa")
 | `sva::ComBat_seq()`, no group | 4.87 s | 2.73 s | 1.8x |
 | `sva::ComBat_seq(group = , covar_mod = )`, 3 batches | 15.86 s | 10.99 s | 1.4x |
 
-| Control | Effect |
-|---|---|
-| `options(paradoxR.deseq2 = FALSE)` | Set before loading DESeq2 to keep the original DESeq2 functions. |
-| `options(paradoxR.sva = FALSE)` | Set before loading sva to keep the original sva function. |
+## Speed-up settings
 
-`reset_speedups()` and `use_speedups()` also restore and apply these replacements.
+**Speed-ups apply on load.** `library(paradoxR)` replaces functions in clusterProfiler, DOSE, GOSemSim, DESeq2 and sva, and packages loaded later are sped up as they load.
+
+**Fallback to the original functions:** paradoxR replaces an upstream function only when the installed code is a version that paradoxR was verified against. For all other versions, the original function runs. When a replacement fails, the original function runs for that call and paradoxR shows one warning.
+
+**Compare against the original code:** `reset_speedups()` restores the original functions of one package, or of all packages when called without a name. The package stays original for the rest of the session until `use_speedups()` applies the speed-ups again.
+
+```r
+library(paradoxR)
+set.seed(1)
+dds <- DESeq2::makeExampleDESeqDataSet(n = 2000, m = 6)
+fast <- DESeq2::results(DESeq2::DESeq(dds, quiet = TRUE))
+reset_speedups("DESeq2")
+original <- DESeq2::results(DESeq2::DESeq(dds, quiet = TRUE))
+identical(fast, original)
+use_speedups("DESeq2")
+```
+
+| Call | Effect |
+|---|---|
+| `reset_speedups("DESeq2")` | Restores the original functions of one package: `"clusterProfiler"`, `"DOSE"`, `"GOSemSim"`, `"DESeq2"` or `"sva"`. |
+| `reset_speedups()` | Restores the original functions of all packages. |
+| `use_speedups("DESeq2")`, `use_speedups()` | Applies the speed-ups again, for one package or all packages. |
+| `clear_cache()` | Deletes the GO and KEGG cache. |
+| `options(paradoxR.cache_dir = )` | Sets the cache directory. The default is `tools::R_user_dir("paradoxR", "cache")`. |
+
+To start a session with the original functions, see `?use_speedups`.
 
 ## License
 
