@@ -23,4 +23,6 @@
 - Stored results: with paradoxR loaded, `Seurat::FindAllMarkers()` and `DiffBind::dba.count()` keep their results on disk, so running a script or rendering a document again returns them at once when the data, input files, arguments and package versions are unchanged. `options(paradoxR.result_cache = FALSE)` turns this off.
 - Settings: cached items unused for 7 days are deleted automatically, also when the speed-ups are turned off, and the cache always leaves 15% of the disk or 15 GB free. `options(paradoxR.cache_max_age_days = )`, `paradoxR.cache_min_free_pct` and `paradoxR.cache_min_free_gb` change these limits; `clear_cache()` also deletes stored results.
 - Palette family: sequential and diverging sienna gradients span a wider range from light to dark with stronger colour, `sunset` is a bright yellow-to-red gradient distinct from `ember`, and `orange_teal` stays distinguishable for colour-blind readers.
+- Palette family: `use_sienna_palette()` also switches ordered factors, and `scale_colour_sienna_o()` and `scale_fill_sienna_o()` set them by hand.
+- Palette family: colour scales leave out the palest part of a gradient so low-value points and lines stay visible; `begin` and `end` choose the part of a gradient a scale uses.
 - Palette family: the `spectral` gradient is removed.

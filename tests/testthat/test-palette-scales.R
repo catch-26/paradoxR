@@ -23,6 +23,7 @@ test_that("color spellings are the same functions", {
   expect_identical(scale_color_sienna_c, scale_colour_sienna_c)
   expect_identical(scale_color_sienna_b, scale_colour_sienna_b)
   expect_identical(scale_color_sienna_div, scale_colour_sienna_div)
+  expect_identical(scale_color_sienna_o, scale_colour_sienna_o)
 })
 
 test_that("continuous scale ends at the first and last stop", {
@@ -78,4 +79,51 @@ test_that("use_sienna_palette() rejects unknown palettes before touching options
   before <- getOption("ggplot2.continuous.fill")
   expect_error(use_sienna_palette(continuous = "nope"))
   expect_identical(getOption("ggplot2.continuous.fill"), before)
+})
+
+test_that("colour scales leave out the palest fifth and fill scales do not", {
+  df <- data.frame(x = 1:2, y = 1, z = c(0, 1))
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y, colour = z)) +
+    ggplot2::geom_point() +
+    scale_colour_sienna_c("ocean")
+  expect_identical(build_colours(p), c(sienna_grad_pal("ocean")(0.2), "#272B60"))
+
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y, colour = z)) +
+    ggplot2::geom_point() +
+    scale_colour_sienna_c("ocean", begin = 0)
+  expect_identical(build_colours(p), c("#DEFEEA", "#272B60"))
+})
+
+test_that("reverse applies after begin and end", {
+  df <- data.frame(x = 1:2, y = 1, z = c(0, 1))
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y, colour = z)) +
+    ggplot2::geom_point() +
+    scale_colour_sienna_c("ocean", reverse = TRUE)
+  expect_identical(build_colours(p), c("#272B60", sienna_grad_pal("ocean")(0.2)))
+})
+
+test_that("invalid begin and end give an error", {
+  expect_error(scale_colour_sienna_c(begin = 0.5, end = 0.5), "begin")
+  expect_error(scale_fill_sienna_b(begin = -0.1), "begin")
+  expect_error(scale_fill_sienna_c(end = c(0.5, 1)), "begin")
+})
+
+test_that("ordinal scales space the levels evenly along the gradient", {
+  df <- data.frame(x = 1:3, y = 1, o = factor(c("a", "b", "c"), ordered = TRUE))
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y, fill = o)) +
+    ggplot2::geom_tile() +
+    scale_fill_sienna_o("forest")
+  expect_identical(build_fills(p), sienna_grad_pal("forest")(c(0.2, 0.6, 1)))
+})
+
+test_that("use_sienna_palette() also switches ordinal scales", {
+  skip_if_not(any(grepl("ggplot2.ordinal.fill", deparse(formals(ggplot2::scale_fill_ordinal)$type), fixed = TRUE)))
+  on.exit(reset_ggplot2_palette())
+  df <- data.frame(x = 1:3, y = 1, o = factor(c("a", "b", "c"), ordered = TRUE))
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y, fill = o)) +
+    ggplot2::geom_tile()
+  use_sienna_palette(continuous = "ocean")
+  expect_identical(build_fills(p), sienna_grad_pal("ocean")(c(0.2, 0.6, 1)))
+  reset_ggplot2_palette()
+  expect_identical(build_fills(p), scales::pal_viridis()(3))
 })

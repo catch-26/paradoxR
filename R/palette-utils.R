@@ -3,7 +3,8 @@
 palette_ggplot2_options <- c(
   "ggplot2.discrete.colour", "ggplot2.discrete.fill",
   "ggplot2.continuous.colour", "ggplot2.continuous.fill",
-  "ggplot2.binned.colour", "ggplot2.binned.fill"
+  "ggplot2.binned.colour", "ggplot2.binned.fill",
+  "ggplot2.ordinal.colour", "ggplot2.ordinal.fill"
 )
 
 palette_scale_d <- function(aesthetics, palette, ...) {
@@ -16,6 +17,23 @@ palette_scale_c <- function(aesthetics, colours, ...) {
 
 palette_scale_b <- function(aesthetics, colours, ...) {
   ggplot2::scale_colour_stepsn(colours = colours, ..., aesthetics = aesthetics)
+}
+
+palette_scale_o <- function(aesthetics, colours, ...) {
+  pal <- scales::pal_gradient_n(colours)
+  compat_discrete_scale(aesthetics, \(n) pal(seq(0, 1, length.out = n)), ...)
+}
+
+palette_trim <- function(colours, begin = 0, end = 1, call = rlang::caller_env()) {
+  valid <- is.numeric(begin) && is.numeric(end) && length(begin) == 1 && length(end) == 1 &&
+    isTRUE(begin >= 0 && end <= 1 && begin < end)
+  if (!valid) {
+    rlang::abort("`begin` and `end` must be single numbers with 0 <= begin < end <= 1.", call = call)
+  }
+  if (begin == 0 && end == 1) {
+    return(colours)
+  }
+  scales::pal_gradient_n(colours)(seq(begin, end, length.out = length(colours)))
 }
 
 palette_scale_div <- function(aesthetics, colours, ..., midpoint = 0) {
@@ -41,9 +59,9 @@ palette_lookup <- function(palette, sources, call = rlang::caller_env()) {
   unname(source[[palette]])
 }
 
-palette_set_options <- function(colour_d, fill_d, colour_c, fill_c, colour_b, fill_b) {
+palette_set_options <- function(colour_d, fill_d, colour_c, fill_c, colour_b, fill_b, colour_o, fill_o) {
   new <- rlang::set_names(
-    list(colour_d, fill_d, colour_c, fill_c, colour_b, fill_b),
+    list(colour_d, fill_d, colour_c, fill_c, colour_b, fill_b, colour_o, fill_o),
     palette_ggplot2_options
   )
   invisible(options(new))
@@ -51,8 +69,9 @@ palette_set_options <- function(colour_d, fill_d, colour_c, fill_c, colour_b, fi
 
 #' Restore ggplot2's default colour scales
 #'
-#' Clears the `ggplot2.discrete.*`, `ggplot2.continuous.*` and
-#' `ggplot2.binned.*` options set by `use_<palette>_palette()`, such as
+#' Clears the `ggplot2.discrete.*`, `ggplot2.continuous.*`,
+#' `ggplot2.binned.*` and `ggplot2.ordinal.*` options set by
+#' `use_<palette>_palette()`, such as
 #' [use_sienna_palette()].
 #'
 #' @return The previous option values, invisibly.

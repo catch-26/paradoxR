@@ -13,15 +13,15 @@ starts at 15.}
 \item{harmonise}{If \code{TRUE}, return harmonised colours; if \code{FALSE}, the
 original swatches for the same selection.}
 
-\item{continuous}{Palette for continuous and binned scales.}
+\item{continuous}{Palette for continuous, binned and ordinal scales.}
 }
 \value{
 The previous option values, invisibly.
 }
 \description{
-Sets ggplot2's \verb{ggplot2.discrete.*}, \verb{ggplot2.continuous.*} and
-\verb{ggplot2.binned.*} options, so every plot uses sienna without a \verb{scale_*()}
-call. \code{\link[=reset_ggplot2_palette]{reset_ggplot2_palette()}} switches back.
+Sets ggplot2's \verb{ggplot2.discrete.*}, \verb{ggplot2.continuous.*},
+\verb{ggplot2.binned.*} and \verb{ggplot2.ordinal.*} options, so every plot uses
+sienna without a \verb{scale_*()} call. \code{\link[=reset_ggplot2_palette]{reset_ggplot2_palette()}} switches back.
 }
 \examples{
 use_sienna_palette(continuous = "ocean")

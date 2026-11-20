@@ -8,12 +8,15 @@
 \alias{scale_fill_sienna_c}
 \alias{scale_colour_sienna_b}
 \alias{scale_fill_sienna_b}
+\alias{scale_colour_sienna_o}
+\alias{scale_fill_sienna_o}
 \alias{scale_colour_sienna_div}
 \alias{scale_fill_sienna_div}
 \alias{scale_color_sienna_d}
 \alias{scale_color_sienna_c}
 \alias{scale_color_sienna_b}
 \alias{scale_color_sienna_div}
+\alias{scale_color_sienna_o}
 \title{Sienna scales for ggplot2}
 \usage{
 scale_colour_sienna_d(
@@ -36,6 +39,8 @@ scale_colour_sienna_c(
   palette = "ocean",
   ...,
   reverse = FALSE,
+  begin = 0.2,
+  end = 1,
   aesthetics = "colour"
 )
 
@@ -43,6 +48,8 @@ scale_fill_sienna_c(
   palette = "ocean",
   ...,
   reverse = FALSE,
+  begin = 0,
+  end = 1,
   aesthetics = "fill"
 )
 
@@ -50,6 +57,8 @@ scale_colour_sienna_b(
   palette = "ocean",
   ...,
   reverse = FALSE,
+  begin = 0.2,
+  end = 1,
   aesthetics = "colour"
 )
 
@@ -57,6 +66,26 @@ scale_fill_sienna_b(
   palette = "ocean",
   ...,
   reverse = FALSE,
+  begin = 0,
+  end = 1,
+  aesthetics = "fill"
+)
+
+scale_colour_sienna_o(
+  palette = "ocean",
+  ...,
+  reverse = FALSE,
+  begin = 0.2,
+  end = 1,
+  aesthetics = "colour"
+)
+
+scale_fill_sienna_o(
+  palette = "ocean",
+  ...,
+  reverse = FALSE,
+  begin = 0.2,
+  end = 1,
   aesthetics = "fill"
 )
 
@@ -88,6 +117,8 @@ scale_color_sienna_c(
   palette = "ocean",
   ...,
   reverse = FALSE,
+  begin = 0.2,
+  end = 1,
   aesthetics = "colour"
 )
 
@@ -95,6 +126,8 @@ scale_color_sienna_b(
   palette = "ocean",
   ...,
   reverse = FALSE,
+  begin = 0.2,
+  end = 1,
   aesthetics = "colour"
 )
 
@@ -103,6 +136,15 @@ scale_color_sienna_div(
   ...,
   midpoint = 0,
   reverse = FALSE,
+  aesthetics = "colour"
+)
+
+scale_color_sienna_o(
+  palette = "ocean",
+  ...,
+  reverse = FALSE,
+  begin = 0.2,
+  end = 1,
   aesthetics = "colour"
 )
 }
@@ -125,6 +167,11 @@ original swatches for the same selection.}
 
 \item{reverse}{If \code{TRUE}, reverse the order of the stops.}
 
+\item{begin, end}{Part of the gradient to use, from 0 (low end) to 1 (high
+end), applied before \code{reverse}. Colour scales and ordinal scales start at
+\code{0.2}, so the palest colours, which barely show as points and lines on a
+white or grey panel, are left out; fill scales use the whole gradient.}
+
 \item{midpoint}{Data value mapped to the neutral centre.}
 }
 \value{
@@ -139,6 +186,7 @@ Drop-in replacements for ggplot2's default colour and fill scales.
    \code{scale_colour_discrete()} \tab \code{scale_colour_sienna_d()} \cr
    \code{scale_fill_continuous()} \tab \code{scale_fill_sienna_c("ocean")} \cr
    \code{scale_fill_binned()} \tab \code{scale_fill_sienna_b("ocean")} \cr
+   \code{scale_fill_ordinal()} \tab \code{scale_fill_sienna_o("ocean")} \cr
    \code{scale_fill_gradient2(midpoint = m)} \tab \code{scale_fill_sienna_div("red_blue", midpoint = m)} \cr
 }
 }

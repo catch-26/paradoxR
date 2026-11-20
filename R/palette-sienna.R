@@ -167,12 +167,17 @@ sienna_grad_pal <- function(palette = "ocean", reverse = FALSE) {
 #' | `scale_colour_discrete()` | `scale_colour_sienna_d()` |
 #' | `scale_fill_continuous()` | `scale_fill_sienna_c("ocean")` |
 #' | `scale_fill_binned()` | `scale_fill_sienna_b("ocean")` |
+#' | `scale_fill_ordinal()` | `scale_fill_sienna_o("ocean")` |
 #' | `scale_fill_gradient2(midpoint = m)` | `scale_fill_sienna_div("red_blue", midpoint = m)` |
 #'
 #' @inheritParams sienna_pal
 #' @inheritParams sienna_gradient
 #' @param ... Passed to the underlying ggplot2 scale, such as `name`,
 #'   `limits`, `breaks` or `na.value`.
+#' @param begin,end Part of the gradient to use, from 0 (low end) to 1 (high
+#'   end), applied before `reverse`. Colour scales and ordinal scales start at
+#'   `0.2`, so the palest colours, which barely show as points and lines on a
+#'   white or grey panel, are left out; fill scales use the whole gradient.
 #' @param midpoint Data value mapped to the neutral centre.
 #' @param aesthetics Aesthetics the scale applies to.
 #' @return A ggplot2 scale.
@@ -201,26 +206,38 @@ scale_fill_sienna_d <- function(..., h_start = 18, direction = 1, harmonise = TR
 
 #' @rdname scale_sienna
 #' @export
-scale_colour_sienna_c <- function(palette = "ocean", ..., reverse = FALSE, aesthetics = "colour") {
-  palette_scale_c(aesthetics, sienna_gradient(palette, reverse), ...)
+scale_colour_sienna_c <- function(palette = "ocean", ..., reverse = FALSE, begin = 0.2, end = 1, aesthetics = "colour") {
+  palette_scale_c(aesthetics, sienna_stops(palette, reverse, begin, end), ...)
 }
 
 #' @rdname scale_sienna
 #' @export
-scale_fill_sienna_c <- function(palette = "ocean", ..., reverse = FALSE, aesthetics = "fill") {
-  palette_scale_c(aesthetics, sienna_gradient(palette, reverse), ...)
+scale_fill_sienna_c <- function(palette = "ocean", ..., reverse = FALSE, begin = 0, end = 1, aesthetics = "fill") {
+  palette_scale_c(aesthetics, sienna_stops(palette, reverse, begin, end), ...)
 }
 
 #' @rdname scale_sienna
 #' @export
-scale_colour_sienna_b <- function(palette = "ocean", ..., reverse = FALSE, aesthetics = "colour") {
-  palette_scale_b(aesthetics, sienna_gradient(palette, reverse), ...)
+scale_colour_sienna_b <- function(palette = "ocean", ..., reverse = FALSE, begin = 0.2, end = 1, aesthetics = "colour") {
+  palette_scale_b(aesthetics, sienna_stops(palette, reverse, begin, end), ...)
 }
 
 #' @rdname scale_sienna
 #' @export
-scale_fill_sienna_b <- function(palette = "ocean", ..., reverse = FALSE, aesthetics = "fill") {
-  palette_scale_b(aesthetics, sienna_gradient(palette, reverse), ...)
+scale_fill_sienna_b <- function(palette = "ocean", ..., reverse = FALSE, begin = 0, end = 1, aesthetics = "fill") {
+  palette_scale_b(aesthetics, sienna_stops(palette, reverse, begin, end), ...)
+}
+
+#' @rdname scale_sienna
+#' @export
+scale_colour_sienna_o <- function(palette = "ocean", ..., reverse = FALSE, begin = 0.2, end = 1, aesthetics = "colour") {
+  palette_scale_o(aesthetics, sienna_stops(palette, reverse, begin, end), ...)
+}
+
+#' @rdname scale_sienna
+#' @export
+scale_fill_sienna_o <- function(palette = "ocean", ..., reverse = FALSE, begin = 0.2, end = 1, aesthetics = "fill") {
+  palette_scale_o(aesthetics, sienna_stops(palette, reverse, begin, end), ...)
 }
 
 #' @rdname scale_sienna
@@ -251,14 +268,23 @@ scale_color_sienna_b <- scale_colour_sienna_b
 #' @export
 scale_color_sienna_div <- scale_colour_sienna_div
 
+#' @rdname scale_sienna
+#' @export
+scale_color_sienna_o <- scale_colour_sienna_o
+
+sienna_stops <- function(palette, reverse, begin, end, call = rlang::caller_env()) {
+  cols <- palette_trim(sienna_gradient(palette), begin, end, call = call)
+  if (reverse) rev(cols) else cols
+}
+
 #' Make sienna the default ggplot2 palette
 #'
-#' Sets ggplot2's `ggplot2.discrete.*`, `ggplot2.continuous.*` and
-#' `ggplot2.binned.*` options, so every plot uses sienna without a `scale_*()`
-#' call. [reset_ggplot2_palette()] switches back.
+#' Sets ggplot2's `ggplot2.discrete.*`, `ggplot2.continuous.*`,
+#' `ggplot2.binned.*` and `ggplot2.ordinal.*` options, so every plot uses
+#' sienna without a `scale_*()` call. [reset_ggplot2_palette()] switches back.
 #'
 #' @inheritParams sienna_pal
-#' @param continuous Palette for continuous and binned scales.
+#' @param continuous Palette for continuous, binned and ordinal scales.
 #' @return The previous option values, invisibly.
 #' @export
 #' @examples
@@ -274,6 +300,8 @@ use_sienna_palette <- function(h_start = 18, harmonise = TRUE, continuous = "oce
     colour_c = \(...) scale_colour_sienna_c(continuous, ...),
     fill_c   = \(...) scale_fill_sienna_c(continuous, ...),
     colour_b = \(...) scale_colour_sienna_b(continuous, ...),
-    fill_b   = \(...) scale_fill_sienna_b(continuous, ...)
+    fill_b   = \(...) scale_fill_sienna_b(continuous, ...),
+    colour_o = \(...) scale_colour_sienna_o(continuous, ...),
+    fill_o   = \(...) scale_fill_sienna_o(continuous, ...)
   )
 }

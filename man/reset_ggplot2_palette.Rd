@@ -10,8 +10,9 @@ reset_ggplot2_palette()
 The previous option values, invisibly.
 }
 \description{
-Clears the \verb{ggplot2.discrete.*}, \verb{ggplot2.continuous.*} and
-\verb{ggplot2.binned.*} options set by \verb{use_<palette>_palette()}, such as
+Clears the \verb{ggplot2.discrete.*}, \verb{ggplot2.continuous.*},
+\verb{ggplot2.binned.*} and \verb{ggplot2.ordinal.*} options set by
+\verb{use_<palette>_palette()}, such as
 \code{\link[=use_sienna_palette]{use_sienna_palette()}}.
 }
 \examples{

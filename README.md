@@ -21,7 +21,7 @@ Requires R 4.1 or newer.
 
 ### Sienna
 
-**One call swaps every ggplot2 default.** `use_sienna_palette()` sets ggplot2's `ggplot2.discrete.*`, `ggplot2.continuous.*` and `ggplot2.binned.*` options; `reset_ggplot2_palette()` switches back.
+**One call swaps every ggplot2 default.** `use_sienna_palette()` sets ggplot2's `ggplot2.discrete.*`, `ggplot2.continuous.*`, `ggplot2.binned.*` and `ggplot2.ordinal.*` options; `reset_ggplot2_palette()` switches back.
 
 ```r
 library(paradoxR)
@@ -36,13 +36,16 @@ reset_ggplot2_palette()
 | `scales::hue_pal()(n)` | `sienna_pal()(n)` |
 | `scales::hue_pal(h.start, direction)` | `sienna_pal(h_start = 18, direction = 1, harmonise = TRUE)` |
 | `ggplot2::scale_colour_discrete()` | `scale_colour_sienna_d()` |
-| `ggplot2::scale_fill_continuous()` | `scale_fill_sienna_c("ocean")` |
+| `ggplot2::scale_fill_continuous()`, `ggplot2::scale_fill_gradient()` | `scale_fill_sienna_c("ocean")` |
 | `ggplot2::scale_fill_binned()` | `scale_fill_sienna_b("ocean")` |
+| `ggplot2::scale_fill_ordinal()` | `scale_fill_sienna_o("ocean")` |
 | `ggplot2::scale_fill_gradient2(midpoint = m)` | `scale_fill_sienna_div("red_blue", midpoint = m)` |
 
 **Palette names:** sequential `sunset`, `ember`, `forest`, `ocean`, `dusk`, `berry`, `earth`; diverging `red_blue`, `orange_teal`, `purple_green`, `rose_sky`; any swatch name in `sienna_colours` gives a single-hue ramp.
 
 **Sequential gradients run light (low) to dark (high)**, the opposite of ggplot2's default; `reverse = TRUE` matches ggplot2.
+
+**Points and lines skip the palest colours.** Colour and ordinal scales use the gradient from `begin = 0.2`, so low values stay visible on white and grey panels; fill scales use the whole gradient. `begin` and `end` pick any part of a gradient.
 
 **Regenerating the colours:** the hex codes are stored as literals in `R/palette-sienna-data.R`. `source("data-raw/palette-sienna.R")` rebuilds them from the 24 swatches with colorspace, dplyr and purrr.
 
