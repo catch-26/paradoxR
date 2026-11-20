@@ -58,12 +58,6 @@ hcl_to_hex <- function(h, c, l) {
   out
 }
 
-max_chroma <- function(h, l) {
-  cs <- seq(0, 150, by = 0.5)
-  ok <- !is.na(colorspace::hex(colorspace::polarLUV(L = l, C = cs, H = h %% 360), fixup = FALSE))
-  max(cs[ok])
-}
-
 harmonise <- function(x, l = sienna_l, c = sienna_c, strength = sienna_harmony) {
   hcl <- hex_to_hcl(x)
   hcl_to_hex(hcl[, "H"], c + strength * (hcl[, "C"] - c), l + strength * (hcl[, "L"] - l)) |>
@@ -81,7 +75,7 @@ unwrap_hue <- function(h) {
   out
 }
 
-seq_colours <- function(hues, l = c(93, 28), chroma = c(10, sienna_c, 32), peak = 0.6, n = 9) {
+seq_colours <- function(hues, l = c(97, 20), chroma = c(22, 72, 38), peak = 0.5, n = 9) {
   t <- seq(0, 1, length.out = n)
   h <- unwrap_hue(unname(hues))
   hh <- if (length(h) == 1) rep(h, n) else stats::approx(seq(0, 1, length.out = length(h)), h, t)$y
@@ -94,11 +88,10 @@ seq_colours <- function(hues, l = c(93, 28), chroma = c(10, sienna_c, 32), peak 
   hcl_to_hex(hh, cc, ll)
 }
 
-div_colours <- function(h_low, h_high, l = c(45, 96), chroma = sienna_c, c_mid = 5, h_mid = sienna_h[["taupe"]], n = 5) {
-  c_end <- min(chroma, max_chroma(h_low, l[1]), max_chroma(h_high, l[1]))
+div_colours <- function(h_low, h_high, l = c(32, 97), chroma = 80, c_mid = 5, h_mid = sienna_h[["taupe"]], n = 5) {
   t <- seq(1, 0, length.out = n)[-n]
   ll <- l[2] - (l[2] - l[1]) * t^1.3
-  cc <- c_mid + (c_end - c_mid) * t
+  cc <- c_mid + (chroma - c_mid) * t^0.8
   c(hcl_to_hex(h_low, cc, ll), hcl_to_hex(h_mid, c_mid, l[2]), rev(hcl_to_hex(h_high, cc, ll)))
 }
 
@@ -115,19 +108,18 @@ sienna_colours_harmonised <- c(
 sienna_wheel <- sienna_h[sienna_wheel_names]
 
 sienna_gradients <- list(
-  sunset   = seq_colours(sienna_h[c("yellow", "amber", "orange", "red", "raspberry")]),
-  ember    = seq_colours(sienna_h[c("mustard", "orange", "vermilion", "red")]),
-  forest   = seq_colours(sienna_h[c("lime", "leaf", "mint", "teal")]),
-  ocean    = seq_colours(sienna_h[c("mint", "teal", "sky", "blue", "indigo")]),
-  dusk     = seq_colours(sienna_h[c("blue", "lavender", "purple", "raspberry")]),
-  berry    = seq_colours(sienna_h[c("salmon", "rose", "raspberry", "purple")]),
-  spectral = hcl_to_hex(seq(sienna_h[["red"]], sienna_h[["purple"]], length.out = 9), sienna_c, sienna_l),
-  earth    = seq_colours(sienna_h[c("taupe", "brown")], l = c(88, 30), chroma = c(6, 22, 8))
+  sunset = seq_colours(sienna_h[c("yellow", "amber", "orange", "red", "raspberry")], l = c(96, 24), chroma = c(45, 90, 45), peak = 0.45),
+  ember  = seq_colours(sienna_h[c("mustard", "orange", "vermilion", "red")], chroma = c(18, 55, 30)),
+  forest = seq_colours(sienna_h[c("lime", "leaf", "mint", "teal")]),
+  ocean  = seq_colours(sienna_h[c("mint", "teal", "sky", "blue", "indigo")], chroma = c(20, 58, 38)),
+  dusk   = seq_colours(sienna_h[c("blue", "lavender", "purple", "raspberry")]),
+  berry  = seq_colours(sienna_h[c("salmon", "rose", "raspberry", "purple")]),
+  earth  = seq_colours(sienna_h[c("taupe", "brown")], l = c(92, 22), chroma = c(10, 28, 10))
 )
 
 sienna_diverging <- list(
   red_blue     = div_colours(sienna_h[["red"]], sienna_h[["blue"]]),
-  orange_teal  = div_colours(sienna_h[["orange"]], sienna_h[["teal"]]),
+  orange_teal  = div_colours(sienna_h[["amber"]], mean(sienna_h[c("teal", "sky")]), l = c(35, 97)),
   purple_green = div_colours(sienna_h[["purple"]], sienna_h[["leaf"]]),
   rose_sky     = div_colours(sienna_h[["rose"]], sienna_h[["sky"]])
 )

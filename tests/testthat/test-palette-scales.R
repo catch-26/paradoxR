@@ -30,7 +30,7 @@ test_that("continuous scale ends at the first and last stop", {
   p <- ggplot2::ggplot(df, ggplot2::aes(x, y, fill = z)) +
     ggplot2::geom_tile() +
     scale_fill_sienna_c("ocean")
-  expect_identical(build_fills(p), c("#DFEFE5", "#3D3E67"))
+  expect_identical(build_fills(p), c("#DEFEEA", "#272B60"))
 })
 
 test_that("binned scale builds", {
@@ -45,7 +45,7 @@ test_that("diverging scale maps the midpoint to the neutral", {
   p <- ggplot2::ggplot(df, ggplot2::aes(x, y, fill = z)) +
     ggplot2::geom_tile() +
     scale_fill_sienna_div("red_blue", midpoint = 0)
-  expect_identical(build_fills(p)[2], "#F7F3EE")
+  expect_identical(build_fills(p)[2], "#FAF6F1")
 })
 
 test_that("extra arguments pass through to ggplot2", {
@@ -66,7 +66,7 @@ test_that("use_sienna_palette() switches every default and reset switches back",
   df <- data.frame(x = 1:2, y = 1, z = c(0, 1))
   p <- ggplot2::ggplot(df, ggplot2::aes(x, y, fill = z)) +
     ggplot2::geom_tile()
-  expect_identical(build_fills(p), c("#DFEFE5", "#3D3E67"))
+  expect_identical(build_fills(p), c("#DEFEEA", "#272B60"))
 
   reset_ggplot2_palette()
   p <- ggplot2::ggplot(ggplot2::mpg, ggplot2::aes(displ, hwy, colour = drv)) +

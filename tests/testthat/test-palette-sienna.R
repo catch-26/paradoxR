@@ -40,15 +40,15 @@ test_that("direction = -1 walks the wheel the other way", {
 test_that("gradients match the reference values", {
   expect_identical(
     sienna_gradient("ocean"),
-    c("#DFEFE5", "#B7DCCE", "#8AC9BF", "#61B3C2", "#6097C6", "#507FB9", "#52679E", "#485282", "#3D3E67")
+    c("#DEFEEA", "#AFE7D3", "#7BCFC2", "#48B4C5", "#4F93C6", "#4C76AB", "#455B91", "#364377", "#272B60")
   )
   expect_identical(
     sienna_gradient("red_blue"),
-    c("#A25449", "#C3827B", "#DEAEA9", "#F3D5D2", "#F7F3EE", "#D5DBF1", "#AEB9DE", "#8092C5", "#4C69AB")
+    c("#8B2909", "#B9655A", "#E09C94", "#FBCDC9", "#FAF6F1", "#CDD7F9", "#9AABE1", "#5E7BC2", "#01499B")
   )
   expect_identical(
     sienna_ramp("teal"),
-    c("#DCEFEB", "#B4DCD5", "#8AC9BF", "#57B7AA", "#06A494", "#038D7F", "#00766B", "#026057", "#004B43")
+    c("#D4FFF8", "#A1E8DD", "#65D2C3", "#02BAA9", "#079E8F", "#028376", "#00685E", "#024F47", "#003731")
   )
   expect_identical(sienna_gradient("sunset", reverse = TRUE), rev(sienna_gradients$sunset))
 })
@@ -83,5 +83,5 @@ test_that("sienna_harmonise() reproduces the stored harmonised swatches", {
 
 test_that("sienna_grad_pal() returns a palette function", {
   pal <- sienna_grad_pal("ocean")
-  expect_identical(pal(c(0, 1)), c("#DFEFE5", "#3D3E67"))
+  expect_identical(pal(c(0, 1)), c("#DEFEEA", "#272B60"))
 })
