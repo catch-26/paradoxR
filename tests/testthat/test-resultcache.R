@@ -154,7 +154,8 @@ test_that("nothing is stored on a network file system", {
 
 test_that("a change in an input file's content runs the function again", {
   local_result_cache()
-  path <- withr::local_tempfile(lines = "first")
+  path <- withr::local_tempfile()
+  writeLines("first", path)
   runs <- 0
   toy <- local_cached_function(
     function(file) {

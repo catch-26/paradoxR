@@ -76,6 +76,7 @@ test_that("DiffBind::dba.count() returns the original counts and sees changed BA
   dba <- suppressMessages(DiffBind::dba(sampleSheet = samples))
   dba$config$doBlacklist <- FALSE
   dba$config$doGreylist <- FALSE
+  dba$config$RunParallel <- FALSE
   count <- function() suppressMessages(DiffBind::dba.count(dba))
   expected <- stock("DiffBind", count())
   expect_identical(count(), expected)
