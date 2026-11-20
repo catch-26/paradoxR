@@ -58,11 +58,15 @@ gocache_get <- function(key) {
     try(unlink(path), silent = TRUE)
     NULL
   }
+  cache_maybe_sweep()
   value <- tryCatch(
     if (file.exists(path)) readRDS(path) else NULL,
     error = drop,
     warning = drop
   )
+  if (!is.null(value)) {
+    cache_touch(path)
+  }
   gocache_remember(key, value)
   value
 }
@@ -71,11 +75,15 @@ gocache_set <- function(key, value) {
   gocache_remember(key, value)
   dir <- gocache_dir()
   tmp <- character()
+  cache_maybe_sweep()
   ok <- tryCatch({
     dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+    if (!cache_make_room(as.numeric(utils::object.size(value)), dir, require_fs = FALSE)) {
+      stop("not enough free disk space")
+    }
     tmp <- tempfile(paste0(key, "-"), tmpdir = dir, fileext = ".tmp")
     saveRDS(value, tmp)
-    gocache_move(tmp, gocache_path(key))
+    gocache_move(tmp, cache_pin(gocache_path(key)))
   }, error = function(e) FALSE, warning = function(w) FALSE)
   if (!isTRUE(ok)) {
     try(unlink(tmp), silent = TRUE)
@@ -119,6 +127,15 @@ gocache_remember <- function(key, value) {
 #' `options(paradoxR.cache_dir = )` (the older name `paradoxR.go_cache_dir`
 #' still works).
 #'
+#' paradoxR also cleans up by itself: a cached item that has not been used for
+#' 7 days (`options(paradoxR.cache_max_age_days = )`) is deleted the next time
+#' paradoxR or a package it speeds up is loaded or uses the cache, also when
+#' the speed-ups are turned off. Writing to the cache always leaves 15% of the
+#' disk or 15 GB free, whichever is more (`options(paradoxR.cache_min_free_pct
+#' = , paradoxR.cache_min_free_gb = )`); the least recently used items are
+#' deleted first, and if there is still not enough room the result is returned
+#' without being stored.
+#'
 #' @return The number of files deleted, invisibly.
 #' @export
 #' @examples
@@ -126,8 +143,9 @@ gocache_remember <- function(key, value) {
 clear_cache <- function() {
   gocache$memory_data <- list()
   gocache$memory_result <- list()
-  files <- list.files(gocache_dir(), pattern = "^go-.*\\.rds$", full.names = TRUE)
-  partial <- list.files(gocache_dir(), pattern = "^go-.*\\.tmp$", full.names = TRUE)
+  dir <- gocache_dir()
+  files <- list.files(dir, pattern = "^go-.*\\.rds$", full.names = TRUE)
+  partial <- list.files(dir, pattern = "^go-.*\\.tmp$", full.names = TRUE)
   unlink(c(files, partial))
   invisible(length(files))
 }

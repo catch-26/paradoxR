@@ -211,9 +211,10 @@ gocache_revert <- function(patch) {
 #' Called automatically when paradoxR is loaded. Packages loaded later are
 #' sped up as they load. The cache is keyed by the clusterProfiler and GO.db
 #' versions and the OrgDb database file, so updating any of them starts a
-#' fresh cache. The `simplify()`, similarity, DESeq2 and sva replacements
-#' apply only to the package versions they were checked against; other
-#' versions keep their own code.
+#' fresh cache. Every cached item that has not been used for 7 days is
+#' deleted automatically; see [clear_cache()]. The `simplify()`, similarity,
+#' DESeq2 and sva replacements apply only to the package versions they were
+#' checked against; other versions keep their own code.
 #'
 #' `reset_speedups()` restores the original functions, for example to compare
 #' results against the original code. With `packages`, only the functions of

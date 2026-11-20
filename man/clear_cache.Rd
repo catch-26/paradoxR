@@ -16,6 +16,15 @@ paradoxR keeps in memory and on disk. The cache lives in
 \code{options(paradoxR.cache_dir = )} (the older name \code{paradoxR.go_cache_dir}
 still works).
 }
+\details{
+paradoxR also cleans up by itself: a cached item that has not been used for
+7 days (\code{options(paradoxR.cache_max_age_days = )}) is deleted the next time
+paradoxR or a package it speeds up is loaded or uses the cache, also when
+the speed-ups are turned off. Writing to the cache always leaves 15\% of the
+disk or 15 GB free, whichever is more (\code{options(paradoxR.cache_min_free_pct = , paradoxR.cache_min_free_gb = )}); the least recently used items are
+deleted first, and if there is still not enough room the result is returned
+without being stored.
+}
 \examples{
 clear_cache()
 }

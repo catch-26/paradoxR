@@ -128,7 +128,9 @@ use_speedups("DESeq2")
 | `reset_speedups()` | Restores the original functions of all packages. |
 | `use_speedups("DESeq2")`, `use_speedups()` | Applies the speed-ups again, for one package or all packages. |
 | `clear_cache()` | Deletes the GO and KEGG cache. |
-| `options(paradoxR.cache_dir = )` | Sets the cache directory. The default is `tools::R_user_dir("paradoxR", "cache")`. |
+| `options(paradoxR.cache_dir = )` | Sets the cache directory. The default is `tools::R_user_dir("paradoxR", "cache")`, the user's local cache folder. |
+| `options(paradoxR.cache_max_age_days = )` | Deletes cached items unused for this many days. The default is 7. Cleanup runs whenever paradoxR or a package it speeds up is loaded or uses the cache, also with the speed-ups off. |
+| `options(paradoxR.cache_min_free_pct = , paradoxR.cache_min_free_gb = )` | Free disk space the cache always leaves: 15% of the disk or 15 GB, whichever is more. The least recently used items are deleted first; if there is still not enough room, the result is returned without being stored. |
 
 To start a session with the original functions, see `?use_speedups`.
 
