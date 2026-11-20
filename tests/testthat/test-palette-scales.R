@@ -48,6 +48,24 @@ test_that("diverging scale maps the midpoint to the neutral", {
   expect_identical(build_fills(p)[2], "#F7F3EE")
 })
 
+test_that("diverging scales default to rose_sky", {
+  df <- data.frame(x = 1:3, y = 1, z = c(-5, 0, 5))
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y, fill = z, colour = z)) +
+    ggplot2::geom_tile()
+  expect_identical(
+    build_fills(p + scale_fill_sienna_div()),
+    build_fills(p + scale_fill_sienna_div("rose_sky"))
+  )
+  expect_identical(
+    ggplot2::layer_data(p + scale_colour_sienna_div())$colour,
+    ggplot2::layer_data(p + scale_colour_sienna_div("rose_sky"))$colour
+  )
+  expect_false(identical(
+    build_fills(p + scale_fill_sienna_div()),
+    build_fills(p + scale_fill_sienna_div("red_blue"))
+  ))
+})
+
 test_that("extra arguments pass through to ggplot2", {
   s <- scale_colour_sienna_d(name = "Drive")
   expect_identical(s$name, "Drive")

@@ -38,9 +38,9 @@ reset_ggplot2_palette()
 | `ggplot2::scale_colour_discrete()` | `scale_colour_sienna_d()` |
 | `ggplot2::scale_fill_continuous()` | `scale_fill_sienna_c("ocean")` |
 | `ggplot2::scale_fill_binned()` | `scale_fill_sienna_b("ocean")` |
-| `ggplot2::scale_fill_gradient2(midpoint = m)` | `scale_fill_sienna_div("red_blue", midpoint = m)` |
+| `ggplot2::scale_fill_gradient2(midpoint = m)` | `scale_fill_sienna_div("rose_sky", midpoint = m)` |
 
-**Palette names:** sequential `sunset`, `ember`, `forest`, `ocean`, `dusk`, `berry`, `earth`; hue `spectral`; diverging `red_blue`, `orange_teal`, `purple_green`, `rose_sky`; any swatch name in `sienna_colours` gives a single-hue ramp.
+**Palette names:** sequential `sunset`, `ember`, `forest`, `ocean`, `dusk`, `berry`, `earth`; hue `spectral`; diverging `rose_sky` (default), `red_blue`, `orange_teal`, `purple_green`; any swatch name in `sienna_colours` gives a single-hue ramp.
 
 **Sequential gradients run light (low) to dark (high)**, the opposite of ggplot2's default; `reverse = TRUE` matches ggplot2.
 
