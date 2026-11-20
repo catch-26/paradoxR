@@ -103,9 +103,17 @@ kk <- clusterProfiler::enrichKEGG(genes, organism = "hsa")
 | `sva::ComBat_seq()`, no group | 4.87 s | 2.73 s | 1.8x |
 | `sva::ComBat_seq(group = , covar_mod = )`, 3 batches | 15.86 s | 10.99 s | 1.4x |
 
+## Stored results
+
+**Loading paradoxR stores the results of slow analysis steps, so running a script or rendering a Quarto document again skips them when nothing they depend on has changed.** You do not change your code.
+
+- **Covered calls:** `Seurat::FindAllMarkers()` and `DiffBind::dba.count()`.
+- **When a stored result is used:** only when the argument values, the content of every input file (for `dba.count()`, the BAM files and their indexes that the DiffBind object points to), the installed versions of the package and everything it depends on, the R build and the relevant options all match. Otherwise the original function runs. Messages, warnings and the random number state of the original call are replayed.
+- **What is stored:** calls that took at least 10 seconds. Nothing is stored when the cache directory is on a network drive or when the ps package, which measures free disk space, is not installed. With the qs2 package installed, results are stored and read faster.
+
 ## Speed-up settings
 
-**Speed-ups apply on load.** `library(paradoxR)` replaces functions in clusterProfiler, DOSE, GOSemSim, DESeq2 and sva, and packages loaded later are sped up as they load.
+**Speed-ups apply on load.** `library(paradoxR)` replaces functions in clusterProfiler, DOSE, GOSemSim, DESeq2, sva, Seurat and DiffBind, and packages loaded later are sped up as they load.
 
 **Fallback to the original functions:** paradoxR replaces an upstream function only when the installed code is a version that paradoxR was verified against. For all other versions, the original function runs. When a replacement fails, the original function runs for that call and paradoxR shows one warning.
 
@@ -124,11 +132,13 @@ use_speedups("DESeq2")
 
 | Call | Effect |
 |---|---|
-| `reset_speedups("DESeq2")` | Restores the original functions of one package: `"clusterProfiler"`, `"DOSE"`, `"GOSemSim"`, `"DESeq2"` or `"sva"`. |
+| `reset_speedups("DESeq2")` | Restores the original functions of one package: `"clusterProfiler"`, `"DOSE"`, `"GOSemSim"`, `"DESeq2"`, `"sva"`, `"Seurat"` or `"DiffBind"`. |
 | `reset_speedups()` | Restores the original functions of all packages. |
 | `use_speedups("DESeq2")`, `use_speedups()` | Applies the speed-ups again, for one package or all packages. |
-| `clear_cache()` | Deletes the GO and KEGG cache. |
+| `clear_cache()` | Deletes the GO and KEGG cache and the stored results. |
 | `options(paradoxR.cache_dir = )` | Sets the cache directory. The default is `tools::R_user_dir("paradoxR", "cache")`, the user's local cache folder. |
+| `options(paradoxR.result_cache = FALSE)` | Stops storing and reusing results of slow analysis steps. |
+| `options(paradoxR.result_cache_min_seconds = )` | Stores only calls that took at least this long. The default is 10 seconds. |
 | `options(paradoxR.cache_max_age_days = )` | Deletes cached items unused for this many days. The default is 7. Cleanup runs whenever paradoxR or a package it speeds up is loaded or uses the cache, also with the speed-ups off. |
 | `options(paradoxR.cache_min_free_pct = , paradoxR.cache_min_free_gb = )` | Free disk space the cache always leaves: 15% of the disk or 15 GB, whichever is more. The least recently used items are deleted first; if there is still not enough room, the result is returned without being stored. |
 

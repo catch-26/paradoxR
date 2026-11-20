@@ -142,7 +142,7 @@ cache_on_load <- function(...) {
 }
 
 cache_hook_packages <- function() {
-  speedups_all_packages()
+  unique(c(speedups_all_packages(), vapply(resultcache_specs(), `[[`, character(1), "pkg")))
 }
 
 cache_hook <- function() {

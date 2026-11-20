@@ -11,7 +11,8 @@ reset_speedups(packages = NULL)
 }
 \arguments{
 \item{packages}{Names of the packages to speed up or restore, any of
-\code{"clusterProfiler"}, \code{"DOSE"}, \code{"GOSemSim"}, \code{"DESeq2"} and \code{"sva"}.
+\code{"clusterProfiler"}, \code{"DOSE"}, \code{"GOSemSim"}, \code{"DESeq2"}, \code{"sva"},
+\code{"Seurat"} and \code{"DiffBind"}.
 \code{NULL}, the default, means all of them.}
 }
 \value{
@@ -23,7 +24,7 @@ function.
 }
 \description{
 \code{use_speedups()} replaces functions inside clusterProfiler, DOSE, GOSemSim,
-DESeq2 and sva so that
+DESeq2, sva, Seurat and DiffBind so that
 \code{clusterProfiler::enrichGO()}, \code{clusterProfiler::simplify()} and the
 functions that call them, such as \code{clusterProfiler::compareCluster()},
 reuse earlier work and run faster:
@@ -53,7 +54,21 @@ call per gene and sample;
 KEGG database and key type, so switching species or key type, or starting
 a new R session, no longer downloads it again. The cache is checked
 against KEGG's release dates once an hour and downloads again when KEGG
-has been updated; when KEGG is unreachable, the cached tables are used.
+has been updated; when KEGG is unreachable, the cached tables are used;
+\item the results of \code{Seurat::FindAllMarkers()} and \code{DiffBind::dba.count()} are
+stored on disk, so running a script or rendering a document again returns
+them at once when nothing they depend on has changed. A stored result is
+used only when the argument values, the content of every input file
+(such as the BAM files and their indexes that a DiffBind object points
+to), the installed versions of the package and everything it depends on,
+the R build and the relevant options all match; messages, warnings and
+the random number state of the original call are replayed. Only calls
+that took at least 10 seconds are stored
+(\code{options(paradoxR.result_cache_min_seconds = )}), and
+\code{options(paradoxR.result_cache = FALSE)} turns this off. Nothing is stored
+when the cache directory is on a network drive or when the \code{ps} package,
+which measures free disk space, is not installed. \code{qs2}, when installed,
+makes storing and reading faster.
 }
 
 Called automatically when paradoxR is loaded. Packages loaded later are

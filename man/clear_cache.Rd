@@ -10,8 +10,9 @@ clear_cache()
 The number of files deleted, invisibly.
 }
 \description{
-Deletes the GO annotation data, \code{enrichGO()} results and KEGG tables that
-paradoxR keeps in memory and on disk. The cache lives in
+Deletes everything paradoxR keeps in memory and on disk: the GO annotation
+data, \code{enrichGO()} results, KEGG tables and the stored results of slow
+analysis steps. The cache lives in
 \code{tools::R_user_dir("paradoxR", "cache")}, or in the directory set with
 \code{options(paradoxR.cache_dir = )} (the older name \code{paradoxR.go_cache_dir}
 still works).

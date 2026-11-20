@@ -7,7 +7,9 @@ Description: Provides drop-in replacements for the default colour scales of
     'ggplot2', with discrete, continuous, binned and diverging scales and one
     switch for every plot. Also makes 'clusterProfiler', 'GOSemSim', 'DESeq2'
     and 'sva' faster when loaded: GO and KEGG data are cached on disk, and
-    slow internal steps are replaced by vectorised code. Unused cache entries
+    slow internal steps are replaced by vectorised code. Stores the results of
+    slow 'Seurat' and 'DiffBind' steps and reuses them when the data, input
+    files, arguments and package versions are unchanged; unused cache entries
     expire after 7 days. Results are identical to the original functions.
 License: Apache License (>= 2)
 URL: https://github.com/catch-26/paradoxR
@@ -27,14 +29,20 @@ Suggests:
     colorspace,
     DBI,
     DESeq2,
+    DiffBind,
     GO.db,
     GOSemSim,
     methods,
     org.Hs.eg.db,
     ps,
+    qs2,
+    Rsamtools,
     S4Vectors,
+    Seurat,
+    SeuratObject,
     SummarizedExperiment,
     sva,
+    targets,
     testthat (>= 3.0.0),
     withr
 Config/testthat/edition: 3

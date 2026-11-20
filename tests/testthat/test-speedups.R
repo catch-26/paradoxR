@@ -21,7 +21,7 @@ local_all_speedups <- function(env = parent.frame()) {
 test_that("package names are matched without regard to case", {
   expect_identical(speedups_packages(NULL), speedups_all_packages())
   expect_identical(speedups_packages(c("deseq2", "SVA", "DESeq2")), c("DESeq2", "sva"))
-  expect_setequal(speedups_all_packages(), c("clusterProfiler", "GOSemSim", "DOSE", "DESeq2", "sva"))
+  expect_setequal(speedups_all_packages(), c("clusterProfiler", "GOSemSim", "DOSE", "DESeq2", "sva", "Seurat", "DiffBind"))
 })
 
 test_that("unknown package names are an error", {

@@ -4,9 +4,9 @@
 \name{paradoxR-package}
 \alias{paradoxR}
 \alias{paradoxR-package}
-\title{paradoxR: Drop-in Colour Palettes and Scales for 'ggplot2'}
+\title{paradoxR: Colour Palettes for 'ggplot2' and Faster 'Bioconductor' Analysis}
 \description{
-Provides drop-in replacements for the default colour scales of 'ggplot2'. The sienna palette family covers discrete, continuous, binned and diverging scales, a global switch for every plot, and helpers for gradients and single-hue ramps.
+Provides drop-in replacements for the default colour scales of 'ggplot2', with discrete, continuous, binned and diverging scales and one switch for every plot. Also makes 'clusterProfiler', 'GOSemSim', 'DESeq2' and 'sva' faster when loaded: GO and KEGG data are cached on disk, and slow internal steps are replaced by vectorised code. Results are identical to the original functions.
 }
 \seealso{
 Useful links:
@@ -18,6 +18,11 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: catch-26 \email{59668327+catch-26@users.noreply.github.com}
+
+Authors:
+\itemize{
+  \item catch-26 \email{59668327+catch-26@users.noreply.github.com}
+}
 
 }
 \keyword{internal}

@@ -85,7 +85,7 @@ test_that("loading a sped-up package cleans the cache even with speed-ups off", 
 })
 
 test_that("load hooks for cleanup cover every package with speed-ups", {
-  expect_true(all(c("clusterProfiler", "DESeq2") %in% cache_hook_packages()))
+  expect_true(all(c("clusterProfiler", "DESeq2", "Seurat", "DiffBind") %in% cache_hook_packages()))
   for (pkg in cache_hook_packages()) {
     hooks <- getHook(packageEvent(pkg, "onLoad"))
     expect_true(any(vapply(hooks, identical, logical(1), cache_on_load)), info = pkg)
@@ -161,4 +161,15 @@ test_that("network file systems are recognised", {
   expect_false(cache_is_network(list(type = "apfs")))
   expect_false(cache_is_network(list(type = "ntfs")))
   expect_false(cache_is_network(NULL))
+})
+
+test_that("clear_cache() deletes stored results and file fingerprints", {
+  dir <- local_store()
+  dir.create(file.path(dir, "results"))
+  dir.create(file.path(dir, "files"))
+  writeBin(as.raw(1), file.path(dir, "results", "a.qs2"))
+  writeBin(as.raw(1), file.path(dir, "files", "b.rds"))
+  writeBin(as.raw(1), file.path(dir, "go-result-c.rds"))
+  expect_identical(clear_cache(), 3L)
+  expect_length(list.files(dir, recursive = TRUE), 0L)
 })
