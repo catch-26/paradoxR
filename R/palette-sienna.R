@@ -167,7 +167,7 @@ sienna_grad_pal <- function(palette = "ocean", reverse = FALSE) {
 #' | `scale_colour_discrete()` | `scale_colour_sienna_d()` |
 #' | `scale_fill_continuous()` | `scale_fill_sienna_c("ocean")` |
 #' | `scale_fill_binned()` | `scale_fill_sienna_b("ocean")` |
-#' | `scale_fill_gradient2(midpoint = m)` | `scale_fill_sienna_div("rose_sky", midpoint = m)` |
+#' | `scale_fill_gradient2(midpoint = m)` | `scale_fill_sienna_div("red_blue", midpoint = m)` |
 #'
 #' @inheritParams sienna_pal
 #' @inheritParams sienna_gradient
@@ -225,13 +225,13 @@ scale_fill_sienna_b <- function(palette = "ocean", ..., reverse = FALSE, aesthet
 
 #' @rdname scale_sienna
 #' @export
-scale_colour_sienna_div <- function(palette = "rose_sky", ..., midpoint = 0, reverse = FALSE, aesthetics = "colour") {
+scale_colour_sienna_div <- function(palette = "red_blue", ..., midpoint = 0, reverse = FALSE, aesthetics = "colour") {
   palette_scale_div(aesthetics, sienna_gradient(palette, reverse), ..., midpoint = midpoint)
 }
 
 #' @rdname scale_sienna
 #' @export
-scale_fill_sienna_div <- function(palette = "rose_sky", ..., midpoint = 0, reverse = FALSE, aesthetics = "fill") {
+scale_fill_sienna_div <- function(palette = "red_blue", ..., midpoint = 0, reverse = FALSE, aesthetics = "fill") {
   palette_scale_div(aesthetics, sienna_gradient(palette, reverse), ..., midpoint = midpoint)
 }
 

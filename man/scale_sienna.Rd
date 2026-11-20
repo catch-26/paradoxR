@@ -61,7 +61,7 @@ scale_fill_sienna_b(
 )
 
 scale_colour_sienna_div(
-  palette = "rose_sky",
+  palette = "red_blue",
   ...,
   midpoint = 0,
   reverse = FALSE,
@@ -69,7 +69,7 @@ scale_colour_sienna_div(
 )
 
 scale_fill_sienna_div(
-  palette = "rose_sky",
+  palette = "red_blue",
   ...,
   midpoint = 0,
   reverse = FALSE,
@@ -99,7 +99,7 @@ scale_color_sienna_b(
 )
 
 scale_color_sienna_div(
-  palette = "rose_sky",
+  palette = "red_blue",
   ...,
   midpoint = 0,
   reverse = FALSE,
@@ -139,7 +139,7 @@ Drop-in replacements for ggplot2's default colour and fill scales.
    \code{scale_colour_discrete()} \tab \code{scale_colour_sienna_d()} \cr
    \code{scale_fill_continuous()} \tab \code{scale_fill_sienna_c("ocean")} \cr
    \code{scale_fill_binned()} \tab \code{scale_fill_sienna_b("ocean")} \cr
-   \code{scale_fill_gradient2(midpoint = m)} \tab \code{scale_fill_sienna_div("rose_sky", midpoint = m)} \cr
+   \code{scale_fill_gradient2(midpoint = m)} \tab \code{scale_fill_sienna_div("red_blue", midpoint = m)} \cr
 }
 }
 \examples{
