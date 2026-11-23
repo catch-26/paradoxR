@@ -463,6 +463,9 @@ resultcache_capture <- function() {
     bytes <- readBin(paths[[which]], "raw", size)
     text <- rawToChar(bytes[(offsets[[which]] + 1):size])
     offsets[[which]] <<- size
+    if (.Platform$OS.type == "windows") {
+      text <- gsub("\r\n", "\n", text, fixed = TRUE)
+    }
     text
   }
   add <- function(event) events[[length(events) + 1L]] <<- event
