@@ -49,10 +49,6 @@ compat_ports <- list(
     fingerprint = "bd70cb4f6914f2dcf5800239b729a8b6",
     versions = list(c(DOSE = "4.4.0", clusterProfiler = "4.18.4"))
   ),
-  "bioc322-enrichgo-cutoffs" = list(
-    fingerprint = "022d8f63fe6579cbe54d9719fa69d68d",
-    versions = list(c(clusterProfiler = "4.18.4", DOSE = "4.4.0"))
-  ),
   "bioc323-simplify" = list(
     fingerprint = "a733138bef9b59a68e580664856e5b3e",
     versions = list(c(clusterProfiler = "4.20.3", GOSemSim = "2.38.3"))
@@ -64,14 +60,6 @@ compat_ports <- list(
   "bioc323-offspring-idx" = list(
     fingerprint = "c5af08e67d404358c0314b7525055a38",
     versions = list(c(GOSemSim = "2.38.3"))
-  ),
-  "bioc323-ora-gson" = list(
-    fingerprint = "392b7025e237afdc75e4c3d1dbc7398d",
-    versions = list(c(enrichit = "0.2.7"))
-  ),
-  "bioc323-enrichgo-cutoffs" = list(
-    fingerprint = "9dcbc3f1c90970df00fa41bde793aded",
-    versions = list(c(clusterProfiler = "4.20.3", enrichit = "0.2.7"))
   ),
   "bioc323-getgodata-sql" = list(
     fingerprint = "4f0b93dc27b6947324cea4858a04793c",

@@ -21,7 +21,7 @@ local_all_speedups <- function(env = parent.frame()) {
 test_that("package names are matched without regard to case", {
   expect_identical(speedups_packages(NULL), speedups_all_packages())
   expect_identical(speedups_packages(c("deseq2", "SVA", "DESeq2")), c("DESeq2", "sva"))
-  expect_setequal(speedups_all_packages(), c("clusterProfiler", "GOSemSim", "DOSE", "DESeq2", "sva", "Seurat", "DiffBind"))
+  expect_setequal(speedups_all_packages(), c("clusterProfiler", "GOSemSim", "DOSE", "DESeq2", "sva", "Seurat", "DiffBind", "csaw", "GenomicAlignments", "ChIPseeker", "EnrichedHeatmap", "Signac", "GSVA", "stats", "MASS"))
 })
 
 test_that("unknown package names are an error", {
@@ -86,4 +86,22 @@ test_that("reset_speedups(\"clusterProfiler\") keeps the GOSemSim replacements",
   expect_true(gocache_patched("GOSemSim", "wangMethod"))
   use_speedups("clusterProfiler")
   expect_true(gocache_patched())
+})
+
+test_that("an S4 method can be replaced and restored", {
+  skip_if_no_bioc("GSVA")
+  loadNamespace("GSVA")
+  patch <- list(pkg = "GSVA", name = "gsva,gsvaParam", make = function(original) {
+    force(original)
+    function(param, ...) "replaced"
+  })
+  was <- gocache_patched("GSVA", "gsva,gsvaParam")
+  reset_speedups("GSVA")
+  withr::defer(if (was) use_speedups("GSVA"))
+  param <- GSVA::gsvaParam(matrix(1, 2, 2, dimnames = list(c("a", "b"), c("x", "y"))), list(s = c("a", "b")))
+  expect_true(gocache_apply(patch))
+  expect_true(gocache_patched("GSVA", "gsva,gsvaParam"))
+  expect_identical(GSVA::gsva(param), "replaced")
+  gocache_revert(patch)
+  expect_false(gocache_patched("GSVA", "gsva,gsvaParam"))
 })

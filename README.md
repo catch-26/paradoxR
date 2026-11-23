@@ -53,8 +53,7 @@ reset_ggplot2_palette()
 
 **Loading paradoxR makes clusterProfiler, DOSE and GOSemSim faster, with results identical to the original functions.** You do not change your code.
 
-- **GO annotation:** `clusterProfiler::enrichGO()`, `clusterProfiler::gseGO()` and `clusterProfiler::groupGO()` build the GO annotation for each OrgDb, ontology and key type one time and keep it on disk. paradoxR reads the OrgDb with SQL, so this build is faster.
-- **Result reuse:** paradoxR keeps each `clusterProfiler::enrichGO()` result on disk. A call with other p-value or q-value cutoffs returns at once.
+- **GO annotation:** `clusterProfiler::enrichGO()`, `clusterProfiler::gseGO()` and `clusterProfiler::groupGO()` query the GO-to-gene table for each OrgDb, ontology and key type one time and keep it on disk. paradoxR reads the OrgDb with SQL, so this query is faster. A new R session reads the table from disk and builds the rest of the GO annotation as the original does.
 - **simplify and Wang similarity:** `clusterProfiler::simplify()`, `GOSemSim::mgoSim()` and `enrichplot::pairwise_termsim(method = "Wang")` calculate all term pairs at one time.
 - **Information content:** `GOSemSim::godata()` calculates information content in one vectorised step.
 - **KEGG download cache:** `clusterProfiler::enrichKEGG()`, `clusterProfiler::gseKEGG()`, `clusterProfiler::enrichMKEGG()` and `clusterProfiler::gseMKEGG()` download each KEGG table one time and keep it on disk for all species, key types and sessions. paradoxR compares the cache with the KEGG release dates at most one time each hour and downloads again when KEGG changes. When KEGG is not available, paradoxR uses the cached tables.
@@ -110,13 +109,16 @@ kk <- clusterProfiler::enrichKEGG(genes, organism = "hsa")
 
 **Loading paradoxR stores the results of slow analysis steps, so running a script or rendering a Quarto document again skips them when nothing they depend on has changed.** You do not change your code.
 
-- **Covered calls:** `Seurat::FindAllMarkers()` and `DiffBind::dba.count()`.
-- **When a stored result is used:** only when the argument values, the content of every input file (for `dba.count()`, the BAM files and their indexes that the DiffBind object points to), the installed versions of the package and everything it depends on, the R build and the relevant options all match. Otherwise the original function runs. Messages, warnings and the random number state of the original call are replayed.
+- **Covered calls:**
+  - single-cell: `Seurat::FindAllMarkers()`, `RunPCA()`, `FindNeighbors()`, `RunUMAP()`, `SCTransform()` and `IntegrateLayers()` with `CCAIntegration`, `RPCAIntegration`, `JointPCAIntegration` or `HarmonyIntegration`, and `Signac::FeatureMatrix()`;
+  - ChIP-seq and ATAC-seq: `DiffBind::dba.count()`, `csaw::windowCounts()`, `csaw::regionCounts()`, `GenomicAlignments::summarizeOverlaps()` on BAM files, `ChIPseeker::getTagMatrix()` and `EnrichedHeatmap::normalizeToMatrix()`;
+  - bulk RNA-seq and general statistics: `GSVA::gsva()` on a dense matrix, `sva::ComBat_seq()`, `DESeq2::lfcShrink()`, `stats::hclust()` on 5,000 or more objects and `MASS::kde2d()` on large inputs.
+- **When a stored result is used:** only when the argument values, the content of every input file (BAM files and their indexes, fragment files, peak files and annotation databases), the installed versions of the package and everything it depends on, the R build and the relevant options all match. Otherwise the original function runs. Seurat functions are keyed only by the data they read, so adding metadata or another reduction to an object does not count as a change. Functions with their own seed argument, such as `RunUMAP(seed.use = )`, reuse a result whatever the random state before the call. A stored result is replayed exactly as the original call behaved: printed output, progress text, messages and warnings in their original order, whether the result was printed, option changes, the packages the call loaded, and the random number state. Functions whose stock calls leave other traces, such as `ChIPseeker::annotatePeak()` filling its own annotation cache, are not stored.
 - **What is stored:** calls that took at least 10 seconds. Nothing is stored when the cache directory is on a network drive or when the ps package, which measures free disk space, is not installed. With the qs2 package installed, results are stored and read faster.
 
 ## Speed-up settings
 
-**Speed-ups apply on load.** `library(paradoxR)` replaces functions in clusterProfiler, DOSE, GOSemSim, DESeq2, sva, Seurat and DiffBind, and packages loaded later are sped up as they load.
+**Speed-ups apply on load.** `library(paradoxR)` replaces functions in clusterProfiler, DOSE, GOSemSim, DESeq2, sva, Seurat, Signac, DiffBind, csaw, GenomicAlignments, ChIPseeker, EnrichedHeatmap, GSVA, stats and MASS, and packages loaded later are sped up as they load.
 
 **Fallback to the original functions:** paradoxR replaces an upstream function only when the installed code is a version that paradoxR was verified against. For all other versions, the original function runs. When a replacement fails, the original function runs for that call and paradoxR shows one warning.
 
@@ -135,7 +137,7 @@ use_speedups("DESeq2")
 
 | Call | Effect |
 |---|---|
-| `reset_speedups("DESeq2")` | Restores the original functions of one package: `"clusterProfiler"`, `"DOSE"`, `"GOSemSim"`, `"DESeq2"`, `"sva"`, `"Seurat"` or `"DiffBind"`. |
+| `reset_speedups("DESeq2")` | Restores the original functions of one package: `"clusterProfiler"`, `"DOSE"`, `"GOSemSim"`, `"DESeq2"`, `"sva"`, `"Seurat"`, `"Signac"`, `"DiffBind"`, `"csaw"`, `"GenomicAlignments"`, `"ChIPseeker"`, `"EnrichedHeatmap"`, `"GSVA"`, `"stats"` or `"MASS"`. |
 | `reset_speedups()` | Restores the original functions of all packages. |
 | `use_speedups("DESeq2")`, `use_speedups()` | Applies the speed-ups again, for one package or all packages. |
 | `clear_cache()` | Deletes the GO and KEGG cache and the stored results. |

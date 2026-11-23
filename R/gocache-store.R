@@ -121,9 +121,8 @@ gocache_remember <- function(key, value) {
 
 #' Clear paradoxR's cache
 #'
-#' Deletes everything paradoxR keeps in memory and on disk: the GO annotation
-#' data, `enrichGO()` results, KEGG tables and the stored results of slow
-#' analysis steps. The cache lives in
+#' Deletes everything paradoxR keeps in memory and on disk: the GO-to-gene
+#' tables, KEGG tables and the stored results of slow analysis steps. The cache lives in
 #' `tools::R_user_dir("paradoxR", "cache")`, or in the directory set with
 #' `options(paradoxR.cache_dir = )` (the older name `paradoxR.go_cache_dir`
 #' still works).

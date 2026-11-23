@@ -12,7 +12,8 @@ reset_speedups(packages = NULL)
 \arguments{
 \item{packages}{Names of the packages to speed up or restore, any of
 \code{"clusterProfiler"}, \code{"DOSE"}, \code{"GOSemSim"}, \code{"DESeq2"}, \code{"sva"},
-\code{"Seurat"} and \code{"DiffBind"}.
+\code{"Seurat"}, \code{"Signac"}, \code{"DiffBind"}, \code{"csaw"}, \code{"GenomicAlignments"},
+\code{"ChIPseeker"}, \code{"EnrichedHeatmap"}, \code{"GSVA"}, \code{"stats"} and \code{"MASS"}.
 \code{NULL}, the default, means all of them.}
 }
 \value{
@@ -24,18 +25,17 @@ function.
 }
 \description{
 \code{use_speedups()} replaces functions inside clusterProfiler, DOSE, GOSemSim,
-DESeq2, sva, Seurat and DiffBind so that
+DESeq2, sva, Seurat, Signac, DiffBind, csaw, GenomicAlignments, ChIPseeker,
+EnrichedHeatmap, GSVA, stats and MASS so that
 \code{clusterProfiler::enrichGO()}, \code{clusterProfiler::simplify()} and the
 functions that call them, such as \code{clusterProfiler::compareCluster()},
 reuse earlier work and run faster:
 }
 \details{
 \itemize{
-\item the GO annotation for an OrgDb, ontology and key type is built once and
-kept on disk, so a new R session reads it in under a second instead of
-querying the OrgDb again;
-\item the result of an \code{enrichGO()} call is kept, so the same gene list with the
-same settings returns at once;
+\item the GO-to-gene table for an OrgDb, ontology and key type is queried once
+and kept on disk, so a new R session reads it instead of querying the
+OrgDb again and builds the rest of the GO annotation as the original;
 \item Wang semantic similarity between GO terms is computed for all term pairs
 at once instead of pair by pair, which speeds up \code{simplify()} and
 \code{enrichplot::pairwise_termsim(method = "Wang")}; results are unchanged;
@@ -55,14 +55,24 @@ KEGG database and key type, so switching species or key type, or starting
 a new R session, no longer downloads it again. The cache is checked
 against KEGG's release dates once an hour and downloads again when KEGG
 has been updated; when KEGG is unreachable, the cached tables are used;
-\item the results of \code{Seurat::FindAllMarkers()} and \code{DiffBind::dba.count()} are
-stored on disk, so running a script or rendering a document again returns
-them at once when nothing they depend on has changed. A stored result is
+\item the results of \code{Seurat::FindAllMarkers()}, \code{RunPCA()}, \code{FindNeighbors()},
+\code{RunUMAP()}, \code{SCTransform()} and \code{IntegrateLayers()} (CCA, RPCA, joint
+PCA and Harmony), \code{Signac::FeatureMatrix()}, \code{DiffBind::dba.count()},
+\code{csaw::windowCounts()}, \code{csaw::regionCounts()},
+\code{GenomicAlignments::summarizeOverlaps()} on BAM files,
+\code{ChIPseeker::getTagMatrix()}, \code{EnrichedHeatmap::normalizeToMatrix()},
+\code{GSVA::gsva()} on a dense matrix, \code{sva::ComBat_seq()},
+\code{DESeq2::lfcShrink()}, \code{stats::hclust()} on 5,000 or more objects and
+\code{MASS::kde2d()} on large inputs are stored on disk, so running a script
+or rendering a document again returns them at once when nothing they
+depend on has changed. A stored result is
 used only when the argument values, the content of every input file
-(such as the BAM files and their indexes that a DiffBind object points
-to), the installed versions of the package and everything it depends on,
-the R build and the relevant options all match; messages, warnings and
-the random number state of the original call are replayed. Only calls
+(BAM files and their indexes, fragment files, peak files and annotation
+databases), the installed versions of the package and everything it depends on,
+the R build and the relevant options all match. A hit repeats what the
+original call did: printed output, progress text, messages and warnings
+in their order, the visibility of the result, option changes, loaded
+packages and the random number state. Only calls
 that took at least 10 seconds are stored
 (\code{options(paradoxR.result_cache_min_seconds = )}), and
 \code{options(paradoxR.result_cache = FALSE)} turns this off. Nothing is stored

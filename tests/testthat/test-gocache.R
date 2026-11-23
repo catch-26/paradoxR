@@ -33,7 +33,7 @@ test_that("enrichGO() returns the same result with and without the cache", {
   expect_true(gocache_patched())
   cached <- run()
   expect_true(length(list.files(dir, pattern = "^go-data-")) == 1L)
-  expect_true(length(list.files(dir, pattern = "^go-result-")) == 1L)
+  expect_length(list.files(dir, pattern = "^go-result-"), 0L)
   expect_identical(run()@result, cached@result)
   gocache$memory_data <- list()
   gocache$memory_result <- list()
@@ -115,9 +115,10 @@ test_that("cached GO data stays separate per ontology across calls", {
   testthat::skip_if_not(is.environment(bp), "this clusterProfiler returns GO data as an object, not a shared environment")
   bp_terms <- names(get("PATHID2EXTID", envir = bp))
   mf <- get_go_data(db, "MF", "ENTREZID")
+  mf_terms <- names(get("PATHID2EXTID", envir = mf))
   bp_again <- get_go_data(db, "BP", "ENTREZID")
   expect_identical(names(get("PATHID2EXTID", envir = bp_again)), bp_terms)
-  expect_false(identical(names(get("PATHID2EXTID", envir = mf)), bp_terms))
+  expect_false(identical(mf_terms, bp_terms))
 })
 
 test_that("gocache_intersect_each() matches lapply(intersect) exactly", {
@@ -155,17 +156,17 @@ test_that("replacements left by an earlier paradoxR load can be reverted and re-
   loadNamespace("clusterProfiler")
   on.exit(use_speedups(), add = TRUE)
   reset_speedups()
-  stock <- get("enrichGO", envir = asNamespace("clusterProfiler"))
+  stock <- get("get_GO_data", envir = asNamespace("clusterProfiler"))
   use_speedups()
   expect_true(gocache_patched())
   gocache$original <- NULL
   expect_true(reset_speedups())
-  expect_identical(get("enrichGO", envir = asNamespace("clusterProfiler")), stock)
+  expect_identical(get("get_GO_data", envir = asNamespace("clusterProfiler")), stock)
   use_speedups()
   gocache$original <- NULL
   use_speedups()
   expect_true(gocache_patched())
-  expect_identical(gocache_original("clusterProfiler", "enrichGO"), stock)
+  expect_identical(gocache_original("clusterProfiler", "get_GO_data"), stock)
 })
 
 test_that("unhooking removes only paradoxR's load hooks", {

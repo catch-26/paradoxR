@@ -227,3 +227,233 @@ test_that("the cache is bypassed inside a targets pipeline", {
   toy(1)
   expect_length(stored_results(), 0L)
 })
+
+test_that("a function with its own seed argument ignores the incoming random state", {
+  local_result_cache()
+  runs <- 0
+  toy <- local_cached_function(function(n, seed = 42) {
+    runs <<- runs + 1
+    set.seed(seed)
+    stats::runif(n)
+  }, spec = list(seed = "seed"))
+  set.seed(1)
+  a <- toy(3)
+  after <- .Random.seed
+  set.seed(2)
+  expect_identical(toy(3), a)
+  expect_identical(.Random.seed, after)
+  expect_identical(runs, 1)
+  expect_length(stored_results(), 1L)
+  toy(3, seed = 7)
+  expect_identical(runs, 2)
+})
+
+test_that("a seed argument set to NULL keys by the incoming random state", {
+  local_result_cache()
+  runs <- 0
+  toy <- local_cached_function(function(n, seed = NULL) {
+    runs <<- runs + 1
+    if (!is.null(seed)) set.seed(seed)
+    stats::runif(n)
+  }, spec = list(seed = "seed"))
+  set.seed(1)
+  a <- toy(3)
+  set.seed(2)
+  expect_false(identical(toy(3), a))
+  set.seed(1)
+  expect_identical(toy(3), a)
+  expect_identical(runs, 2)
+})
+
+test_that("package functions as arguments are keyed by code, package and version", {
+  stable <- resultcache_stable(list(f = stats::median, g = base::sum))
+  expect_identical(stable$f$package, "stats")
+  expect_identical(stable$f$version, as.character(utils::packageVersion("stats")))
+  expect_identical(stable$g, list(primitive = deparse(base::sum)))
+  has_env <- function(x) is.environment(x) || (is.list(x) && any(vapply(x, has_env, logical(1))))
+  expect_false(has_env(stable))
+})
+
+test_that("a call with a function from outside a package is not stored", {
+  local_result_cache()
+  runs <- 0
+  toy <- local_cached_function(function(x, f) {
+    runs <<- runs + 1
+    f(x)
+  })
+  toy(1:3, function(v) sum(v))
+  toy(1:3, function(v) sum(v))
+  expect_identical(runs, 2)
+  expect_length(stored_results(), 0L)
+  toy(1:3, base::sum)
+  toy(1:3, base::sum)
+  expect_identical(runs, 3)
+})
+
+test_that("BAM file handles and parallel back ends are keyed by their settings", {
+  skip_if_no_bioc("Rsamtools")
+  skip_if_not_installed("BiocParallel")
+  path <- system.file("extdata", "ex1.bam", package = "Rsamtools")
+  a <- resultcache_stable(list(Rsamtools::BamFile(path), BiocParallel::SerialParam()))
+  b <- resultcache_stable(list(Rsamtools::BamFile(path), BiocParallel::SerialParam()))
+  expect_identical(rlang::hash(a), rlang::hash(b))
+  c <- resultcache_stable(list(Rsamtools::BamFile(path, yieldSize = 10), BiocParallel::SerialParam()))
+  expect_false(identical(rlang::hash(a), rlang::hash(c)))
+  list_a <- resultcache_stable(Rsamtools::BamFileList(path))
+  expect_identical(rlang::hash(list_a), rlang::hash(resultcache_stable(Rsamtools::BamFileList(path))))
+})
+
+test_that("restore puts back what the original takes from the caller's expressions", {
+  local_result_cache()
+  toy <- local_cached_function(function(x) {
+    structure(x * 2, name = deparse(substitute(x)))
+  }, spec = list(restore = function(value, frame, call, original) {
+    attr(value, "name") <- deparse(eval(quote(substitute(x)), frame))
+    value
+  }))
+  input <- 1:3
+  expect_identical(attr(toy(input), "name"), "input")
+  expect_identical(attr(toy(input), "name"), "input")
+  expect_length(stored_results(), 1L)
+})
+
+test_that("calls made while a stored function runs are not stored on their own", {
+  local_result_cache()
+  inner_runs <- 0
+  inner <- local_cached_function(function(x) {
+    inner_runs <<- inner_runs + 1
+    x + 1
+  })
+  inner(1)
+  expect_length(stored_results(), 1L)
+  gocache$resultcache_running <- TRUE
+  withr::defer(gocache$resultcache_running <- FALSE)
+  expect_identical(inner(5), 6)
+  expect_length(stored_results(), 1L)
+})
+
+test_that("printed output and conditions are replayed in their original order", {
+  local_result_cache()
+  toy <- local_cached_function(function(x) {
+    cat("first ")
+    message("between")
+    cat("line\n")
+    print(x)
+    warning("careful")
+    cat("no newline")
+    x
+  })
+  record <- function() {
+    events <- character()
+    out <- utils::capture.output(withCallingHandlers(
+      toy(1:3),
+      message = function(m) {
+        events <<- c(events, "message")
+        invokeRestart("muffleMessage")
+      },
+      warning = function(w) {
+        events <<- c(events, "warning")
+        invokeRestart("muffleWarning")
+      }
+    ))
+    list(out = out, events = events)
+  }
+  first <- record()
+  second <- record()
+  expect_length(stored_results(), 1L)
+  expect_identical(second, first)
+  expect_identical(first$out, c("first line", "[1] 1 2 3", "no newline[1] 1 2 3"))
+})
+
+test_that("an invisible result stays invisible on a hit", {
+  local_result_cache()
+  toy <- local_cached_function(function(x) invisible(x * 2))
+  expect_false(withVisible(toy(2))$visible)
+  expect_false(withVisible(toy(2))$visible)
+  expect_length(stored_results(), 1L)
+  shown <- local_cached_function(function(x) x * 3)
+  expect_true(withVisible(shown(2))$visible)
+  expect_true(withVisible(shown(2))$visible)
+})
+
+test_that("packages loaded during the original call are loaded again on a hit", {
+  local_result_cache()
+  candidates <- setdiff(c("colorspace", "DBI", "S4Vectors"), loadedNamespaces())
+  candidates <- candidates[nzchar(vapply(candidates, function(p) system.file(package = p), character(1)))]
+  skip_if(length(candidates) == 0L, "no unloaded test package available")
+  pkg <- candidates[[1L]]
+  toy <- local_cached_function(function(x) {
+    loadNamespace(pkg)
+    x
+  })
+  toy(1)
+  key <- sub("[.](qs2|rds)$", "", stored_results())
+  expect_true(pkg %in% resultcache_read(key)$namespaces)
+  unloadNamespace(pkg)
+  expect_false(pkg %in% loadedNamespaces())
+  toy(1)
+  expect_true(pkg %in% loadedNamespaces())
+})
+
+test_that("text written straight to the console is replayed in order", {
+  local_result_cache()
+  toy <- local_cached_function(function(x) {
+    cat("progress 50%\n", file = stderr())
+    message("note")
+    cat("progress 100%\n", file = stderr())
+    x
+  })
+  run <- function() {
+    file <- withr::local_tempfile()
+    con <- file(file, open = "w")
+    sink(con, type = "message")
+    toy(1)
+    sink(type = "message")
+    close(con)
+    readLines(file)
+  }
+  first <- run()
+  second <- run()
+  expect_length(stored_results(), 1L)
+  expect_identical(first, c("progress 50%", "note", "progress 100%"))
+  expect_identical(second, first)
+})
+
+test_that("an immediately printed warning is recognised and printed the same way again", {
+  event <- list(type = "warning", message = "now")
+  expect_identical(resultcache_printed(event, "Warning: now\nmore"), 13L)
+  expect_identical(resultcache_printed(event, "Warning in f(x) :\n  now\n"), 24L)
+  expect_identical(resultcache_printed(event, "progress"), 0L)
+  expect_identical(resultcache_printed(list(type = "message", message = "hi\n"), "hi\nrest"), 3L)
+})
+
+test_that("package state a stock call creates is created again on a hit", {
+  local_result_cache()
+  made <- FALSE
+  local_mocked_bindings(resultcache_states = function() list(toy = list(
+    exists = function() made,
+    create = function() made <<- TRUE
+  )))
+  toy <- local_cached_function(function(x) {
+    made <<- TRUE
+    x
+  })
+  toy(1)
+  made <- FALSE
+  toy(1)
+  expect_true(made)
+  expect_length(stored_results(), 1L)
+})
+
+test_that("a hit leaves package state alone that the stock call did not create", {
+  local_result_cache()
+  made <- FALSE
+  local_mocked_bindings(resultcache_states = function() list(toy = list(
+    exists = function() made,
+    create = function() made <<- TRUE
+  )))
+  toy <- local_cached_function(function(x) x)
+  toy(1)
+  toy(1)
+  expect_false(made)
+})

@@ -35,20 +35,3 @@ gocache_make_enricher <- function(original) {
   fast
 }
 
-gocache_cutoffs_are_labels <- function() {
-  isTRUE(gocache$cutoffs_are_labels)
-}
-
-gocache_note_cutoffs <- function() {
-  ns_cp <- asNamespace("clusterProfiler")
-  enricher <- gocache_original("clusterProfiler", "enricher_internal")
-  if (is.null(enricher)) {
-    enricher <- get0("enricher_internal", envir = ns_cp, inherits = FALSE)
-  }
-  enrich_go <- gocache_original("clusterProfiler", "enrichGO")
-  gocache$cutoffs_are_labels <- !is.null(enrich_go) && (
-    (compat_port_applies("bioc322-enricher", enricher) &&
-      compat_port_applies("bioc322-enrichgo-cutoffs", enrich_go)) ||
-      gocache323_cutoffs_are_labels(enrich_go)
-  )
-}

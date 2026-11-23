@@ -51,7 +51,7 @@ jobs:
         run: |
           utils::install.packages("BiocManager")
           print(BiocManager::version())
-          BiocManager::install(c("clusterProfiler", "DOSE", "enrichplot", "GOSemSim", "AnnotationDbi", "GO.db", "org.Hs.eg.db", "DESeq2", "sva", "DiffBind", "Rsamtools"), ask = FALSE, update = TRUE, force = TRUE)
+          BiocManager::install(c("clusterProfiler", "DOSE", "enrichplot", "GOSemSim", "AnnotationDbi", "GO.db", "org.Hs.eg.db", "DESeq2", "sva", "DiffBind", "Rsamtools", "csaw", "GenomicAlignments", "ChIPseeker", "EnrichedHeatmap", "TxDb.Hsapiens.UCSC.hg19.knownGene", "GSVA", "apeglm"), ask = FALSE, update = TRUE, force = TRUE)
           print(utils::packageVersion("clusterProfiler"))
           print(utils::packageVersion("DOSE"))
           print(BiocManager::valid())
@@ -60,7 +60,7 @@ jobs:
         if: matrix.config.ggplot2 == 'latest'
         shell: Rscript {0}
         run: |
-          pkgs <- c("AnnotationDbi", "DBI", "GO.db", "GOSemSim", "clusterProfiler", "org.Hs.eg.db", "DESeq2", "S4Vectors", "SummarizedExperiment", "sva", "DiffBind", "Rsamtools", "Seurat")
+          pkgs <- c("AnnotationDbi", "DBI", "GO.db", "GOSemSim", "clusterProfiler", "org.Hs.eg.db", "DESeq2", "S4Vectors", "SummarizedExperiment", "sva", "DiffBind", "Rsamtools", "Seurat", "Signac", "csaw", "GenomicAlignments", "ChIPseeker", "EnrichedHeatmap", "TxDb.Hsapiens.UCSC.hg19.knownGene", "GSVA")
           failed <- Filter(\(p) inherits(try(loadNamespace(p)), "try-error"), pkgs)
           if (length(failed) > 0) stop("cannot load: ", paste(failed, collapse = ", "))
 

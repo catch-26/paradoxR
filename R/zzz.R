@@ -2,6 +2,7 @@
   try(cache_hook(), silent = TRUE)
   try(cache_maybe_sweep(), silent = TRUE)
   if (speedups_enabled()) {
+    resultcache_load_helpers()
     gocache_use_safely()
   }
 }

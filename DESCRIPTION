@@ -8,7 +8,9 @@ Description: Provides drop-in replacements for the default colour scales of
     switch for every plot. Also makes 'clusterProfiler', 'GOSemSim', 'DESeq2'
     and 'sva' faster when loaded: GO and KEGG data are cached on disk, and
     slow internal steps are replaced by vectorised code. Stores the results of
-    slow 'Seurat' and 'DiffBind' steps and reuses them when the data, input
+    slow 'Seurat', 'Signac', 'DiffBind', 'csaw', 'GenomicAlignments',
+    'ChIPseeker', 'EnrichedHeatmap', 'GSVA', 'sva', 'DESeq2', 'stats' and
+    'MASS' steps and reuses them when the data, input
     files, arguments and package versions are unchanged; unused cache entries
     expire after 7 days. Results are identical to the original functions.
 License: Apache License (>= 2)
@@ -25,13 +27,23 @@ Imports:
     utils
 Suggests: 
     AnnotationDbi,
+    BiocGenerics,
+    BiocParallel,
+    ChIPseeker,
     clusterProfiler,
     colorspace,
+    csaw,
     DBI,
     DESeq2,
     DiffBind,
+    EnrichedHeatmap,
+    GenomicAlignments,
+    GenomicRanges,
     GO.db,
     GOSemSim,
+    GSVA,
+    IRanges,
+    MASS,
     methods,
     org.Hs.eg.db,
     ps,
@@ -40,10 +52,13 @@ Suggests:
     S4Vectors,
     Seurat,
     SeuratObject,
+    Signac,
     SummarizedExperiment,
     sva,
     targets,
     testthat (>= 3.0.0),
+    tidyselect,
+    TxDb.Hsapiens.UCSC.hg19.knownGene,
     withr
 Config/testthat/edition: 3
 Encoding: UTF-8

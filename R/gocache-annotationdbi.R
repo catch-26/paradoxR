@@ -95,7 +95,7 @@ gocache_swap <- function(expr) {
   expr
 }
 
-gocache_fast_go_data <- function(original) {
+gocache_fast_go_data <- function(original, mapids = gocache_mapids) {
   if (!compat_port_applies("bioc322-getgodata-sql", original) &&
     !compat_port_applies("bioc323-getgodata-sql", original)) {
     return(original)
@@ -106,7 +106,7 @@ gocache_fast_go_data <- function(original) {
   }
   fast <- original
   env <- new.env(parent = environment(original))
-  env$gocache_mapids <- gocache_mapids
+  env$gocache_mapids <- mapids
   env$gocache_unique <- gocache_unique
   body(fast) <- new_body
   environment(fast) <- env

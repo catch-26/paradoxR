@@ -5,13 +5,29 @@
 # and BLAS, the relevant options and, when the function draws random numbers,
 # the random number state. A hit also replays the messages and warnings, the
 # option changes and the random number state that the original call left.
-# Functions are added as entries of resultcache_specs().
+# Functions are added as entries of resultcache_specs(). Calls made while a
+# stored function runs (dba.count() calling summarizeOverlaps(), say) are not
+# stored on their own, since the outer result already covers them.
 
 resultcache_subdir <- "results"
 resultcache_files_subdir <- "files"
 
 resultcache_enabled <- function() {
   isTRUE(getOption("paradoxR.result_cache", TRUE)) && speedups_enabled()
+}
+
+# The packages that store results are loaded with paradoxR, so that the
+# first stored or reused result does not load them in the middle of a call
+# (loading qs2 also registers methods), which a stock call would not do.
+resultcache_load_helpers <- function() {
+  if (isTRUE(getOption("paradoxR.result_cache", TRUE))) {
+    for (pkg in c("ps", "qs2")) {
+      if (nzchar(system.file(package = pkg))) {
+        try(loadNamespace(pkg), silent = TRUE)
+      }
+    }
+  }
+  invisible(NULL)
 }
 
 resultcache_min_seconds <- function() {
@@ -58,15 +74,25 @@ resultcache_call <- function(id, frame) {
   has_dots <- "..." %in% names(formals(original))
   call <- resultcache_original_call(original, supplied, has_dots)
   run <- function() eval(call, frame)
+  caller <- sys.call(sys.parent())
+  finish <- function(result) {
+    value <- if (is.null(spec$restore)) result$value else spec$restore(result$value, frame, caller, original)
+    if (result$visible) value else invisible(value)
+  }
+  if (isTRUE(gocache$resultcache_running)) {
+    return(finish(withVisible(run())))
+  }
   plan <- tryCatch(resultcache_plan(id, spec, original, frame, supplied, has_dots), error = function(e) NULL)
   if (is.null(plan)) {
-    return(run())
+    return(finish(withVisible(run())))
   }
   entry <- tryCatch(resultcache_lookup(plan), error = function(e) NULL)
   if (!is.null(entry)) {
-    return(resultcache_replay(entry))
+    return(finish(withVisible(resultcache_replay(entry))))
   }
-  resultcache_record(plan, run)
+  gocache$resultcache_running <- TRUE
+  on.exit(gocache$resultcache_running <- FALSE, add = TRUE)
+  finish(withVisible(resultcache_record(plan, run)))
 }
 
 resultcache_plan <- function(id, spec, original, frame, supplied, has_dots) {
@@ -76,18 +102,20 @@ resultcache_plan <- function(id, spec, original, frame, supplied, has_dots) {
   if (isNamespaceLoaded("targets") && isTRUE(tryCatch(targets::tar_active(), error = function(e) FALSE))) {
     return(NULL)
   }
-  cache_maybe_sweep()
   args <- mget(supplied, envir = frame)
   if (has_dots) {
     args <- c(args, list(... = eval(quote(list(...)), frame)))
   }
-  if (!is.null(spec$project)) {
-    args <- spec$project(args)
-  }
   if (!is.null(spec$bypass) && isTRUE(spec$bypass(args))) {
     return(NULL)
   }
+  cache_maybe_sweep()
+  if (!is.null(spec$project)) {
+    args <- spec$project(args)
+  }
   files <- if (is.null(spec$files)) character() else spec$files(args)
+  args <- resultcache_stable(args)
+  seeded <- !is.null(spec$seed) && resultcache_seeded(get(spec$seed, envir = frame))
   key <- rlang::hash(list(
     id = id,
     code = compat_fingerprint(original),
@@ -98,7 +126,55 @@ resultcache_plan <- function(id, spec, original, frame, supplied, has_dots) {
     missing = setdiff(setdiff(names(formals(original)), "..."), supplied),
     files = resultcache_file_ids(files)
   ))
-  list(id = id, key = paste0(gsub("[^a-z0-9]", "", tolower(id)), "-", key))
+  list(id = id, key = paste0(gsub("[^a-z0-9]", "", tolower(id)), "-", key), seeded = seeded)
+}
+
+# A function with its own seed argument sets the random number state itself,
+# so its result does not depend on the state it was called with.
+resultcache_seeded <- function(seed) {
+  is.numeric(seed) && length(seed) == 1L && !is.na(seed)
+}
+
+# Replaces values that differ between sessions although they mean the same:
+# package functions by their code, package and version, Bioconductor file
+# handles by their paths and settings, annotation databases by their file
+# content, and parallel back ends by their class (the functions stored give
+# the same result on any back end). Other functions can call code that is not
+# part of the key, so a call with one is not stored.
+resultcache_stable <- function(x) {
+  if (is.function(x)) {
+    if (is.primitive(x)) {
+      return(list(primitive = deparse(x)))
+    }
+    env <- environment(x)
+    if (!isNamespace(env)) {
+      stop("function argument outside a package")
+    }
+    pkg <- unname(getNamespaceName(env))
+    x <- utils::removeSource(x)
+    return(list(fun = list(formals(x), body(x)), package = pkg, version = compat_installed_version(pkg)))
+  }
+  if (methods::is(x, "BiocParallelParam")) {
+    return(list(class = class(x)))
+  }
+  if (methods::is(x, "RsamtoolsFile")) {
+    fields <- setdiff(names(methods::getRefClass(class(x))$fields()), ".extptr")
+    return(c(list(class = class(x)), lapply(stats::setNames(fields, fields), function(field) x[[field]])))
+  }
+  if (methods::is(x, "RsamtoolsFileList")) {
+    return(list(class = class(x), files = lapply(as.list(x), resultcache_stable), names = names(x)))
+  }
+  if (methods::is(x, "AnnotationDb")) {
+    return(list(
+      class = class(x),
+      file = resultcache_file_ids(AnnotationDbi::dbfile(x)),
+      metadata = AnnotationDbi::metadata(x)
+    ))
+  }
+  if (is.list(x) && !is.object(x)) {
+    x[] <- lapply(x, resultcache_stable)
+  }
+  x
 }
 
 resultcache_platform <- function() {
@@ -234,7 +310,7 @@ resultcache_lookup <- function(plan) {
   if (!is.null(entry) && isTRUE(entry$rng_dependent)) {
     entry <- resultcache_read(resultcache_rng_key(plan$key, resultcache_seed()))
   }
-  if (!is.null(entry) && !identical(entry$format, 1L)) {
+  if (!is.null(entry) && !identical(entry$format, 2L)) {
     return(NULL)
   }
   entry
@@ -262,64 +338,249 @@ resultcache_condition <- function(condition, type) {
   list(type = type, message = conditionMessage(condition), class = class(condition), call = call)
 }
 
+# Runs the original and records everything a hit has to repeat: printed
+# output, text written to the console's error stream (progress bars) and
+# conditions in the order they happened, whether the value was visible, the
+# option changes, the packages the call loaded or attached, and the random
+# number state.
 resultcache_record <- function(plan, run) {
-  seed_before <- resultcache_seed()
-  options_before <- options()
-  conditions <- list()
-  started <- proc.time()[["elapsed"]]
-  value <- withCallingHandlers(
-    run(),
-    message = function(m) conditions[[length(conditions) + 1L]] <<- resultcache_condition(m, "message"),
-    warning = function(w) conditions[[length(conditions) + 1L]] <<- resultcache_condition(w, "warning")
-  )
-  elapsed <- proc.time()[["elapsed"]] - started
-  if (elapsed < resultcache_min_seconds()) {
-    return(value)
+  recorded <- resultcache_run_recorded(run)
+  result <- recorded$result
+  value <- result$value
+  if (recorded$seconds < resultcache_min_seconds()) {
+    return(if (result$visible) value else invisible(value))
   }
-  seed_after <- resultcache_seed()
-  rng_dependent <- !identical(seed_before, seed_after)
-  options_after <- options()
-  changed <- union(names(options_before), names(options_after))
-  changed <- changed[!vapply(changed, function(n) identical(options_before[[n]], options_after[[n]]), logical(1))]
-  entry <- list(
-    format = 1L,
-    value = value,
-    conditions = conditions,
-    rng_dependent = rng_dependent,
-    seed = seed_after,
-    options = stats::setNames(lapply(changed, function(n) options_after[[n]]), changed),
-    seconds = elapsed
-  )
+  rng_dependent <- !isTRUE(plan$seeded) && !identical(recorded$seed_before, recorded$seed_after)
+  seed_before <- recorded$seed_before
+  entry <- resultcache_entry(recorded, rng_dependent = rng_dependent, seeded = isTRUE(plan$seeded))
   try({
     if (rng_dependent) {
-      resultcache_write(plan$key, list(format = 1L, rng_dependent = TRUE))
+      resultcache_write(plan$key, list(format = 2L, rng_dependent = TRUE))
       resultcache_write(resultcache_rng_key(plan$key, seed_before), entry)
     } else {
       resultcache_write(plan$key, entry)
     }
   }, silent = TRUE)
-  value
+  if (result$visible) value else invisible(value)
+}
+
+# Lazily created package state that a stock call can leave behind and that
+# a hit has to create the same way: each entry says whether the state exists
+# and creates it through the package's own functions.
+resultcache_states <- function() {
+  list(
+    "biocparallel-registry" = list(
+      exists = function() {
+        isNamespaceLoaded("BiocParallel") &&
+          length(get(".registry", envir = asNamespace("BiocParallel"))$bpparams) > 0L
+      },
+      create = function() invisible(BiocParallel::registered())
+    ),
+    "tidyselect-vars" = list(
+      exists = function() {
+        isNamespaceLoaded("tidyselect") &&
+          exists("selected", envir = get("vars_env", envir = asNamespace("tidyselect")), inherits = FALSE)
+      },
+      create = function() invisible(tidyselect::eval_select(quote(NULL), data.frame()))
+    )
+  )
+}
+
+resultcache_state_check <- function() {
+  vapply(resultcache_states(), function(state) isTRUE(tryCatch(state$exists(), error = function(e) FALSE)), logical(1))
+}
+
+resultcache_run_recorded <- function(run) {
+  states_before <- resultcache_state_check()
+  seed_before <- resultcache_seed()
+  options_before <- options()
+  namespaces_before <- loadedNamespaces()
+  search_before <- search()
+  capture <- resultcache_capture()
+  on.exit(capture$close(), add = TRUE)
+  started <- proc.time()[["elapsed"]]
+  result <- withCallingHandlers(
+    withVisible(run()),
+    message = function(m) capture$condition(m, "message"),
+    warning = function(w) capture$condition(w, "warning")
+  )
+  events <- capture$finish()
+  options_after <- options()
+  changed <- union(names(options_before), names(options_after))
+  changed <- changed[!vapply(changed, function(n) identical(options_before[[n]], options_after[[n]]), logical(1))]
+  list(
+    result = result,
+    events = events,
+    namespaces = setdiff(loadedNamespaces(), namespaces_before),
+    attached = setdiff(search(), search_before),
+    options = stats::setNames(lapply(changed, function(n) options_after[[n]]), changed),
+    seed_before = seed_before,
+    seed_after = resultcache_seed(),
+    seconds = proc.time()[["elapsed"]] - started,
+    states = names(which(resultcache_state_check() & !states_before))
+  )
+}
+
+resultcache_entry <- function(recorded, rng_dependent, seeded = FALSE) {
+  list(
+    format = 2L,
+    value = recorded$result$value,
+    visible = recorded$result$visible,
+    events = recorded$events,
+    namespaces = recorded$namespaces,
+    attached = recorded$attached,
+    rng_dependent = rng_dependent,
+    seeded = seeded,
+    seed = recorded$seed_after,
+    options = recorded$options,
+    states = recorded$states,
+    seconds = recorded$seconds
+  )
+}
+
+# Copies what the original call prints while it still reaches the console:
+# standard output through a split sink, the error stream through a message
+# sink whose text is passed on at every condition and at the end. A
+# condition's own printed text is recognised and dropped, since replaying
+# the condition prints it again.
+resultcache_capture <- function() {
+  paths <- c(output = tempfile("paradoxR-output-"), console = tempfile("paradoxR-console-"))
+  output <- file(paths[["output"]], open = "w")
+  console <- file(paths[["console"]], open = "w")
+  previous <- sink.number(type = "message")
+  target <- if (previous == 2L) stderr() else getConnection(previous)
+  sink(output, split = TRUE)
+  sink(console, type = "message")
+  open <- TRUE
+  offsets <- c(output = 0, console = 0)
+  events <- list()
+  read_new <- function(which, con) {
+    flush(con)
+    size <- file.size(paths[[which]])
+    if (is.na(size) || size <= offsets[[which]]) {
+      return("")
+    }
+    bytes <- readBin(paths[[which]], "raw", size)
+    text <- rawToChar(bytes[(offsets[[which]] + 1):size])
+    offsets[[which]] <<- size
+    text
+  }
+  add <- function(event) events[[length(events) + 1L]] <<- event
+  pass_on <- function(text) {
+    if (previous == 2L) {
+      sink(type = "message")
+      on.exit(sink(console, type = "message"))
+      cat(text, file = stderr())
+    } else {
+      cat(text, file = target)
+    }
+  }
+  take <- function() {
+    text <- read_new("output", output)
+    if (nzchar(text)) {
+      add(list(type = "output", text = text))
+    }
+    text <- read_new("console", console)
+    if (!nzchar(text)) {
+      return(invisible())
+    }
+    pass_on(text)
+    last <- if (length(events) > 0L) events[[length(events)]] else NULL
+    if (!is.null(last) && last$type %in% c("message", "warning") && !isTRUE(last$printed)) {
+      printed <- resultcache_printed(last, text)
+      if (printed > 0L) {
+        events[[length(events)]]$printed <<- TRUE
+        events[[length(events)]]$immediate <<- identical(last$type, "warning")
+        text <- substring(text, printed + 1L)
+      }
+    }
+    if (nzchar(text)) {
+      add(list(type = "console", text = text))
+    }
+    invisible()
+  }
+  close_all <- function() {
+    if (!open) {
+      return(invisible())
+    }
+    try(take(), silent = TRUE)
+    open <<- FALSE
+    sink()
+    if (previous == 2L) sink(type = "message") else sink(target, type = "message")
+    close(output)
+    close(console)
+    unlink(paths)
+    invisible()
+  }
+  list(
+    condition = function(condition, type) {
+      take()
+      add(resultcache_condition(condition, type))
+    },
+    finish = function() {
+      close_all()
+      events
+    },
+    close = close_all
+  )
+}
+
+# The number of characters at the start of `text` that R printed for the
+# condition itself: the message, or an immediately printed warning.
+resultcache_printed <- function(event, text) {
+  if (identical(event$type, "message")) {
+    return(if (startsWith(text, event$message)) nchar(event$message) else 0L)
+  }
+  if (!startsWith(text, "Warning")) {
+    return(0L)
+  }
+  at <- regexpr(event$message, text, fixed = TRUE)
+  if (at < 0L) {
+    return(0L)
+  }
+  end <- as.integer(at) + nchar(event$message) - 1L
+  if (identical(substr(text, end + 1L, end + 1L), "\n")) end + 1L else end
 }
 
 resultcache_replay <- function(entry) {
+  for (ns in entry$namespaces) {
+    try(loadNamespace(ns), silent = TRUE)
+  }
+  for (pkg in rev(sub("^package:", "", entry$attached[startsWith(entry$attached, "package:")]))) {
+    try(suppressPackageStartupMessages(library(pkg, character.only = TRUE)), silent = TRUE)
+  }
+  states <- resultcache_states()
+  for (name in intersect(entry$states, names(states))) {
+    if (!isTRUE(tryCatch(states[[name]]$exists(), error = function(e) TRUE))) {
+      try(states[[name]]$create(), silent = TRUE)
+    }
+  }
   if (length(entry$options) > 0L) {
     options(entry$options)
   }
-  for (condition in entry$conditions) {
-    signal <- structure(
-      class = condition$class,
-      list(message = condition$message, call = condition$call)
-    )
-    if (identical(condition$type, "warning")) {
-      warning(signal)
+  for (event in entry$events) {
+    if (identical(event$type, "output")) {
+      cat(event$text)
+    } else if (identical(event$type, "console")) {
+      cat(event$text, file = stderr())
+    } else if (identical(event$type, "warning")) {
+      signal <- structure(class = event$class, list(message = event$message, call = event$call))
+      if (isTRUE(event$immediate)) {
+        old <- options(warn = max(1L, getOption("warn", 0L)))
+        on.exit(options(old), add = TRUE)
+        warning(signal)
+        options(old)
+      } else {
+        warning(signal)
+      }
     } else {
-      message(signal)
+      message(structure(class = event$class, list(message = event$message, call = event$call)))
     }
   }
-  if (isTRUE(entry$rng_dependent)) {
+  if (isTRUE(entry$rng_dependent) || isTRUE(entry$seeded)) {
     resultcache_set_seed(entry$seed)
   }
-  entry$value
+  if (isFALSE(entry$visible)) invisible(entry$value) else entry$value
 }
 
 # Content fingerprints of input files. A file's content hash is reused while

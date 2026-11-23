@@ -6,7 +6,7 @@
 \alias{paradoxR-package}
 \title{paradoxR: Colour Palettes for 'ggplot2' and Faster 'Bioconductor' Analysis}
 \description{
-Provides drop-in replacements for the default colour scales of 'ggplot2', with discrete, continuous, binned, ordinal and diverging scales and one switch for every plot. Also makes 'clusterProfiler', 'GOSemSim', 'DESeq2' and 'sva' faster when loaded: GO and KEGG data are cached on disk, and slow internal steps are replaced by vectorised code. Stores the results of slow 'Seurat' and 'DiffBind' steps and reuses them when the data, input files, arguments and package versions are unchanged; unused cache entries expire after 7 days. Results are identical to the original functions.
+Provides drop-in replacements for the default colour scales of 'ggplot2', with discrete, continuous, binned, ordinal and diverging scales and one switch for every plot. Also makes 'clusterProfiler', 'GOSemSim', 'DESeq2' and 'sva' faster when loaded: GO and KEGG data are cached on disk, and slow internal steps are replaced by vectorised code. Stores the results of slow 'Seurat', 'Signac', 'DiffBind', 'csaw', 'GenomicAlignments', 'ChIPseeker', 'EnrichedHeatmap', 'GSVA', 'sva', 'DESeq2', 'stats' and 'MASS' steps and reuses them when the data, input files, arguments and package versions are unchanged; unused cache entries expire after 7 days. Results are identical to the original functions.
 }
 \seealso{
 Useful links:
