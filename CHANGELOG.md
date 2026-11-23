@@ -26,3 +26,4 @@
 - Palette family: colour scales leave out the palest part of a gradient so low-value points and lines stay visible; `begin` and `end` choose the part of a gradient a scale uses.
 - Palette family: the `spectral` gradient is removed.
 - Settings: `options(paradoxR.cache_dir = )` in `~/.Rprofile` keeps the cache in another folder in every session; a leading `~` is expanded, and an empty or invalid value falls back to the default folder.
+- Install: a one-line command adds paradoxR to `~/.Rprofile`, so each interactive R session installs it from r-universe if it is missing, updates it to the newest build at most one time each day, and loads it.

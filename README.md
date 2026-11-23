@@ -17,6 +17,16 @@ pak::pak("catch-26/paradoxR")
 
 Requires R 4.1 or newer.
 
+### Install and update at startup
+
+This command adds one line to `~/.Rprofile`. Run it in a terminal (PowerShell on Windows). Other lines in `~/.Rprofile` stay as they are, and running the command again replaces only its own line.
+
+```sh
+echo 'f <- "~/.Rprofile"; x <- if (file.exists(f)) readLines(f, warn = FALSE); writeLines(c(x[!grepl("catch-26/paradoxR|catch-26.r-universe.dev", x)], r"---(if (interactive()) local({ lib <- Sys.getenv("R_LIBS_USER"); dir.create(lib, recursive = TRUE, showWarnings = FALSE); .libPaths(c(lib, .libPaths())); repo <- c(catch26 = "https://catch-26.r-universe.dev"); stamp <- file.path(tools::R_user_dir("paradoxR", "config"), "r-universe-sha256"); have <- nzchar(system.file(package = "paradoxR")); old <- c(if (file.exists(stamp)) readLines(stamp, warn = FALSE), "")[1]; if (!have || !file.exists(stamp) || difftime(Sys.time(), file.mtime(stamp), units = "days") >= 1) { dir.create(dirname(stamp), recursive = TRUE, showWarnings = FALSE); writeLines(old, stamp); o <- options(timeout = 5); sha <- tryCatch(suppressWarnings(utils::available.packages(utils::contrib.url(repo, .Platform$pkgType), fields = "SHA256")["paradoxR", "SHA256"]), error = function(e) NA); options(o); if (!have || (!is.na(sha) && !identical(sha, old))) tryCatch({ if (!requireNamespace("pak", quietly = TRUE)) utils::install.packages("pak", repos = "https://cloud.r-project.org"); pak::repo_add(catch26 = repo); pak::pak("paradoxR?reinstall&nocache", ask = FALSE); if (!is.na(sha)) writeLines(sha, stamp) }, error = function(e) message("paradoxR update skipped: ", conditionMessage(e))) }; if (nzchar(system.file(package = "paradoxR"))) library(paradoxR) }))---"), f)' | Rscript --no-init-file -
+```
+
+In each interactive R session, the line installs paradoxR from r-universe if it is missing and then loads it. At most one time each day, it compares the installed build with the build on r-universe and installs the new build when they differ. When r-universe cannot be reached within 5 seconds, R starts with the installed version.
+
 ## Palettes
 
 ### Sienna
