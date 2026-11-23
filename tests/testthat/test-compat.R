@@ -16,3 +16,15 @@ test_that("the general option names win and the older names still work", {
   withr::local_options(paradoxR.cache_dir = "new")
   expect_identical(gocache_dir(), "new")
 })
+
+test_that("the cache directory option expands ~ and ignores invalid values", {
+  default <- tools::R_user_dir("paradoxR", which = "cache")
+  withr::local_options(paradoxR.cache_dir = "~/paradoxR-cache", paradoxR.go_cache_dir = NULL)
+  expect_identical(gocache_dir(), path.expand("~/paradoxR-cache"))
+  withr::local_options(paradoxR.cache_dir = "")
+  expect_identical(gocache_dir(), default)
+  withr::local_options(paradoxR.cache_dir = NA_character_)
+  expect_identical(gocache_dir(), default)
+  withr::local_options(paradoxR.cache_dir = c("a", "b"))
+  expect_identical(gocache_dir(), default)
+})

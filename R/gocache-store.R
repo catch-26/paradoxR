@@ -1,7 +1,12 @@
 gocache <- new.env(parent = emptyenv())
 
 gocache_dir <- function() {
-  compat_option("paradoxR.cache_dir", "paradoxR.go_cache_dir", tools::R_user_dir("paradoxR", which = "cache"))
+  default <- tools::R_user_dir("paradoxR", which = "cache")
+  dir <- compat_option("paradoxR.cache_dir", "paradoxR.go_cache_dir", default)
+  if (!rlang::is_string(dir) || is.na(dir) || !nzchar(dir)) {
+    return(default)
+  }
+  path.expand(dir)
 }
 
 gocache_memory_max <- function(key) {
@@ -125,7 +130,7 @@ gocache_remember <- function(key, value) {
 #' tables, KEGG tables and the stored results of slow analysis steps. The cache lives in
 #' `tools::R_user_dir("paradoxR", "cache")`, or in the directory set with
 #' `options(paradoxR.cache_dir = )` (the older name `paradoxR.go_cache_dir`
-#' still works).
+#' still works), for example in `~/.Rprofile`. A leading tilde in the path is expanded.
 #'
 #' paradoxR also cleans up by itself: a cached item that has not been used for
 #' 7 days (`options(paradoxR.cache_max_age_days = )`) is deleted the next time

@@ -14,7 +14,7 @@ Deletes everything paradoxR keeps in memory and on disk: the GO-to-gene
 tables, KEGG tables and the stored results of slow analysis steps. The cache lives in
 \code{tools::R_user_dir("paradoxR", "cache")}, or in the directory set with
 \code{options(paradoxR.cache_dir = )} (the older name \code{paradoxR.go_cache_dir}
-still works).
+still works), for example in \code{~/.Rprofile}. A leading tilde in the path is expanded.
 }
 \details{
 paradoxR also cleans up by itself: a cached item that has not been used for

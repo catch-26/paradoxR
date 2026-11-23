@@ -25,3 +25,4 @@
 - Palette family: `use_sienna_palette()` also switches ordered factors, and `scale_colour_sienna_o()` and `scale_fill_sienna_o()` set them by hand.
 - Palette family: colour scales leave out the palest part of a gradient so low-value points and lines stay visible; `begin` and `end` choose the part of a gradient a scale uses.
 - Palette family: the `spectral` gradient is removed.
+- Settings: `options(paradoxR.cache_dir = )` in `~/.Rprofile` keeps the cache in another folder in every session; a leading `~` is expanded, and an empty or invalid value falls back to the default folder.
