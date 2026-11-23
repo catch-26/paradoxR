@@ -1,3 +1,7 @@
+# v26.11.2 (2026-11-23)
+
+- Stored results now work after a plain install: ps and rlang 1.3.0 or later, which storing results needs, are installed with paradoxR instead of being optional.
+
 # v26.11.1 (2026-11-23)
 
 - Each change to paradoxR now raises its version number, so `pak::pak()`, `update.packages()` and r-universe install it as an update instead of rebuilding the same version.
