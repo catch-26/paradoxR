@@ -114,3 +114,33 @@ jobs:
           }
           grDevices::dev.off()
           stopifnot(file.size(file) > 0)
+
+  version:
+    runs-on: ubuntu-latest
+
+    name: Check that package changes increase the version
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compare the DESCRIPTION version with the previous commit
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "No previous commit to compare with"
+            exit 0
+          fi
+          if git diff --quiet "$BASE" HEAD -- R NAMESPACE DESCRIPTION inst data man; then
+            echo "No package files changed"
+            exit 0
+          fi
+          old=$(git show "$BASE:DESCRIPTION" | sed -n 's/^Version: *//p')
+          new=$(sed -n 's/^Version: *//p' DESCRIPTION)
+          echo "Version $old -> $new"
+          if [ "$old" = "$new" ] || [ "$(printf '%s\n' "$old" "$new" | sort -V | tail -n 1)" != "$new" ]; then
+            echo "::error file=DESCRIPTION::Package files changed, so the version must increase (was $old, now $new)"
+            exit 1
+          fi
