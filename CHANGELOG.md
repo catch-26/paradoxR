@@ -1,3 +1,7 @@
+# v26.11.1 (2026-11-23)
+
+- Each change to paradoxR now raises its version number, so `pak::pak()`, `update.packages()` and r-universe install it as an update instead of rebuilding the same version.
+
 # v26.11.0 (2026-11-09)
 
 - New package paradoxR, installed with `pak::pak("catch-26/paradoxR")`.
