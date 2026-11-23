@@ -4,6 +4,7 @@
 
 # v26.11.1 (2026-11-23)
 
+- Install: a one-line command for zsh, bash or PowerShell adds a line to `~/.Rprofile` that updates paradoxR from r-universe when an R session starts and then loads it.
 - Each change to paradoxR now raises its version number, so `pak::pak()`, `update.packages()` and r-universe install it as an update instead of rebuilding the same version.
 
 # v26.11.0 (2026-11-09)

@@ -157,6 +157,22 @@ options(paradoxR.cache_dir = "~/paradoxR-cache")
 
 Without this setting, the cache follows R's own user cache folder, which the environment variable `R_USER_CACHE_DIR` (for example in `~/.Renviron`) moves for every package that uses it.
 
+## Update at startup
+
+This command adds one line to `~/.Rprofile`. In each interactive R session, the line compares the installed paradoxR with the version on r-universe, installs the new version if there is one, and then loads paradoxR. When r-universe cannot be reached within 5 seconds, R starts with the installed version. Other lines in `~/.Rprofile` stay as they are, and running the command again replaces only its own line.
+
+macOS and Linux (zsh or bash):
+
+```sh
+echo 'f <- "~/.Rprofile"; x <- if (file.exists(f)) readLines(f, warn = FALSE); writeLines(c(x[!grepl("catch-26/paradoxR|catch-26.r-universe.dev", x)], r"---(if (interactive()) local({ dir.create(Sys.getenv("R_LIBS_USER"), recursive = TRUE, showWarnings = FALSE); .libPaths(c(Sys.getenv("R_LIBS_USER"), .libPaths())); r <- "https://catch-26.r-universe.dev"; o <- options(timeout = 5); a <- suppressWarnings(utils::available.packages(utils::contrib.url(r, .Platform$pkgType))); options(o); v <- a[a[, "Package"] == "paradoxR", "Version"]; if (length(v) && (!nzchar(system.file(package = "paradoxR")) || utils::packageVersion("paradoxR") < v)) { if (!requireNamespace("pak", quietly = TRUE)) utils::install.packages("pak", repos = "https://cloud.r-project.org"); pak::repo_add(catch26 = r); pak::meta_update(); pak::pak("paradoxR", ask = FALSE) }; if (nzchar(system.file(package = "paradoxR"))) library(paradoxR) }))---"), f)' | Rscript --no-init-file -
+```
+
+Windows (PowerShell):
+
+```powershell
+'f <- "~/.Rprofile"; x <- if (file.exists(f)) readLines(f, warn = FALSE); writeLines(c(x[!grepl("catch-26/paradoxR|catch-26.r-universe.dev", x)], r"---(if (interactive()) local({ dir.create(Sys.getenv("R_LIBS_USER"), recursive = TRUE, showWarnings = FALSE); .libPaths(c(Sys.getenv("R_LIBS_USER"), .libPaths())); r <- "https://catch-26.r-universe.dev"; o <- options(timeout = 5); a <- suppressWarnings(utils::available.packages(utils::contrib.url(r, .Platform$pkgType))); options(o); v <- a[a[, "Package"] == "paradoxR", "Version"]; if (length(v) && (!nzchar(system.file(package = "paradoxR")) || utils::packageVersion("paradoxR") < v)) { if (!requireNamespace("pak", quietly = TRUE)) utils::install.packages("pak", repos = "https://cloud.r-project.org"); pak::repo_add(catch26 = r); pak::meta_update(); pak::pak("paradoxR", ask = FALSE) }; if (nzchar(system.file(package = "paradoxR"))) library(paradoxR) }))---"), f)' | & (Get-ChildItem "$env:ProgramFiles\R\R-*\bin\Rscript.exe" | Select-Object -Last 1).FullName --no-init-file -
+```
+
 ## License
 
 Apache 2.0, see [LICENSE](LICENSE).
