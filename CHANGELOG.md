@@ -1,3 +1,7 @@
+# v26.11.3 (2026-11-24)
+
+- Stored results: installing paradoxR also updates ps to 1.8.0 or later when an older ps is installed, since older versions cannot measure free disk space and nothing was stored.
+
 # v26.11.2 (2026-11-23)
 
 - Install: a one-line command for zsh, bash or PowerShell adds a line to `~/.Rprofile` that updates paradoxR from r-universe when an R session starts and then loads it.
