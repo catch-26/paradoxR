@@ -1,3 +1,7 @@
+# v26.11.7 (2026-11-26)
+
+- Bioconductor 3.24: the faster `clusterProfiler::simplify()`, Wang similarity in `GOSemSim::mgoSim()` and `enrichplot::pairwise_termsim()`, information content in `GOSemSim::godata()` and the SQL GO annotation lookup in `clusterProfiler::enrichGO()` now also apply to clusterProfiler 4.22.0 and GOSemSim 2.40.0. The GO annotation table is stored once per OrgDb and key type and shared by all ontologies.
+
 # v26.11.6 (2026-11-26)
 
 - Stored results: calls are now stored when they take at least 3 times as long as storing the result (was 5 times).

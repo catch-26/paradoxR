@@ -97,7 +97,8 @@ gocache_swap <- function(expr) {
 
 gocache_fast_go_data <- function(original, mapids = gocache_mapids) {
   if (!compat_port_applies("bioc322-getgodata-sql", original) &&
-    !compat_port_applies("bioc323-getgodata-sql", original)) {
+    !compat_port_applies("bioc323-getgodata-sql", original) &&
+    !compat_port_applies("bioc324-getgodata-sql", original)) {
     return(original)
   }
   new_body <- gocache_swap(body(original))

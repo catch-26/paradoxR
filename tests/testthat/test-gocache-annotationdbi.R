@@ -31,7 +31,8 @@ test_that("get_GO_data() builds the same GO data with the SQL lookup", {
     original <- gocache_original("clusterProfiler", "get_GO_data")
   }
   testthat::skip_if_not(
-    compat_port_applies("bioc322-getgodata-sql", original) || compat_port_applies("bioc323-getgodata-sql", original),
+    compat_port_applies("bioc322-getgodata-sql", original) || compat_port_applies("bioc323-getgodata-sql", original) ||
+    compat_port_applies("bioc324-getgodata-sql", original),
     "port not verified for these versions"
   )
   fast <- gocache_fast_go_data(original)
@@ -53,7 +54,9 @@ test_that("information content matches GOSemSim", {
   if (gocache_is_replacement(original)) {
     original <- gocache_original("GOSemSim", "computeIC")
   }
-  testthat::skip_if_not(compat_port_applies("bioc322-computeic", original), "port not verified for these versions")
+  ports <- c("bioc322-computeic", "bioc324-computeic")
+  applies <- vapply(ports, compat_port_applies, logical(1), fun = original)
+  testthat::skip_if_not(any(applies), "port not verified for these versions")
   annotation <- AnnotationDbi::select(
     org.Hs.eg.db::org.Hs.eg.db,
     keys = AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = "ENTREZID")[1:2000],
@@ -62,7 +65,8 @@ test_that("information content matches GOSemSim", {
   ) |>
     suppressMessages()
   annotation <- annotation[!is.na(annotation$GO) & annotation$ONTOLOGY == "MF", ]
-  expect_identical(gocache_compute_ic(annotation, "MF"), original(annotation, "MF"))
+  fast <- if (applies[["bioc324-computeic"]]) gocache324_compute_ic else gocache_compute_ic
+  expect_identical(fast(annotation, "MF"), original(annotation, "MF"))
 })
 
 test_that("the data frame unique() keeps the same rows and row names", {

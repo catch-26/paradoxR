@@ -4,7 +4,8 @@ gocache_go_data <- function(OrgDb, ont, keytype, ...) {
   if (!all(vapply(dots, is.null, logical(1)))) {
     return(original(OrgDb, ont, keytype, ...))
   }
-  key <- gocache_key("go-data", "go2gene", gocache_orgdb_id(OrgDb), ont, keytype)
+  scope <- if (compat_port_applies("bioc324-getgodata-sql", original)) "ALL" else ont
+  key <- gocache_key("go-data", "go2gene", gocache_orgdb_id(OrgDb), scope, keytype)
   mapids <- function(x, keys, column, keytype, ..., multiVals) {
     value <- gocache_get(key)
     if (is.list(value) && identical(names(value), keys)) {
@@ -39,8 +40,10 @@ gocache_patches <- function() {
     list(pkg = "clusterProfiler", name = "simplify_internal", make = function(original) gocache323_simplify_internal, port = "bioc323-simplify"),
     list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache_wang, port = "bioc322-wang"),
     list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache323_wang, port = "bioc323-wang"),
+    list(pkg = "GOSemSim", name = "wangMethod", make = function(original) gocache323_wang, port = "bioc324-wang"),
     list(pkg = "GOSemSim", name = "getOffspringIdx", make = function(original) gocache323_offspring_idx, port = "bioc323-offspring-idx"),
     list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache_compute_ic, port = "bioc322-computeic"),
+    list(pkg = "GOSemSim", name = "computeIC", make = function(original) gocache324_compute_ic, port = "bioc324-computeic"),
     list(pkg = "clusterProfiler", name = "kegg_rest", make = function(original) gocache_kegg_rest, fallback = FALSE),
     list(pkg = "DOSE", name = "enricher_internal", make = gocache_make_enricher, port = "bioc322-enricher"),
     list(pkg = "clusterProfiler", name = "enricher_internal", make = gocache_make_enricher, port = "bioc322-enricher"),

@@ -51,7 +51,10 @@ compat_ports <- list(
   ),
   "bioc323-simplify" = list(
     fingerprint = "a733138bef9b59a68e580664856e5b3e",
-    versions = list(c(clusterProfiler = "4.20.3", GOSemSim = "2.38.3"))
+    versions = list(
+      c(clusterProfiler = "4.20.3", GOSemSim = "2.38.3"),
+      c(clusterProfiler = "4.22.0", GOSemSim = "2.40.0")
+    )
   ),
   "bioc323-wang" = list(
     fingerprint = "a18168a3dd8ba96dd40c0c9c7ef19c18",
@@ -59,7 +62,19 @@ compat_ports <- list(
   ),
   "bioc323-offspring-idx" = list(
     fingerprint = "c5af08e67d404358c0314b7525055a38",
-    versions = list(c(GOSemSim = "2.38.3"))
+    versions = list(c(GOSemSim = "2.38.3"), c(GOSemSim = "2.40.0"))
+  ),
+  "bioc324-wang" = list(
+    fingerprint = "74b83a6d1e4b6a91e5f03a0cdf22e5ff",
+    versions = list(c(GOSemSim = "2.40.0"))
+  ),
+  "bioc324-computeic" = list(
+    fingerprint = "e1a0ad9d90481db5f0448d354442eb86",
+    versions = list(c(GOSemSim = "2.40.0"))
+  ),
+  "bioc324-getgodata-sql" = list(
+    fingerprint = "fa69d228740fccbf4d4b7d0d0ec8adad",
+    versions = list(c(clusterProfiler = "4.22.0", AnnotationDbi = "1.75.2"))
   ),
   "bioc323-getgodata-sql" = list(
     fingerprint = "4f0b93dc27b6947324cea4858a04793c",
