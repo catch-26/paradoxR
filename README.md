@@ -58,19 +58,18 @@ reset_ggplot2_palette()
 - **Information content:** `GOSemSim::godata()` calculates information content in one vectorised step.
 - **KEGG download cache:** `clusterProfiler::enrichKEGG()`, `clusterProfiler::gseKEGG()`, `clusterProfiler::enrichMKEGG()` and `clusterProfiler::gseMKEGG()` download each KEGG table one time and keep it on disk for all species, key types and sessions. paradoxR compares the cache with the KEGG release dates at most one time each hour and downloads again when KEGG changes. When KEGG is not available, paradoxR uses the cached tables.
 
-**First-call times** in a new R session with an empty cache, original function against paradoxR. The results are identical. Setup: Bioconductor 3.23, R 4.6.2, clusterProfiler 4.20.3, GOSemSim 2.38.3, org.Hs.eg.db, 315 Entrez IDs, 732 BP terms in the `enrichGO()` result. Mouse row: org.Mm.eg.db, 400 Ensembl IDs, 956 BP terms.
+**First-call times** in a new R session with an empty cache, original function against paradoxR. The results are identical. Median of 3 runs. Setup: Bioconductor 3.23, R 4.6.2, clusterProfiler 4.20.3, GOSemSim 2.38.3, org.Hs.eg.db, 315 Entrez IDs, 732 BP terms in the `enrichGO()` result. Mouse row: org.Mm.eg.db, 398 Ensembl IDs, 905 BP terms.
 
 | Call | Original | paradoxR | Speed-up |
 |---|---|---|---|
-| `clusterProfiler::enrichGO(ont = "MF")` | 7.97 s | 2.64 s | 3x |
-| `clusterProfiler::enrichGO(ont = "BP")` | 19.49 s | 6.02 s | 3.2x |
-| `clusterProfiler::enrichGO(ont = "ALL")` | 25.52 s | 8.65 s | 3x |
-| `clusterProfiler::enrichGO(ont = "BP")`, second gene list | 2.03 s | 0.46 s | 4.4x |
-| `clusterProfiler::enrichGO(ont = "BP", keyType = "ENSEMBL", readable = TRUE)`, org.Mm.eg.db | 39.42 s | 15.54 s | 2.5x |
-| `clusterProfiler::simplify()` | 51.24 s | 2.11 s | 24x |
-| `GOSemSim::mgoSim(measure = "Wang")` | 29.99 s | 0.69 s | 43x |
-| `enrichplot::pairwise_termsim(method = "Wang")` | 1.97 s | 0.13 s | 15x |
-| `GOSemSim::godata(ont = "BP", computeIC = TRUE)` | 25.25 s | 5.80 s | 4.4x |
+| `clusterProfiler::enrichGO(ont = "MF")` | 8.88 s | 3.01 s | 3x |
+| `clusterProfiler::enrichGO(ont = "BP")` | 20.74 s | 7.00 s | 3x |
+| `clusterProfiler::enrichGO(ont = "ALL")` | 32.76 s | 9.87 s | 3.3x |
+| `clusterProfiler::enrichGO(ont = "BP", keyType = "ENSEMBL", readable = TRUE)`, org.Mm.eg.db | 28.60 s | 9.75 s | 2.9x |
+| `clusterProfiler::simplify()` | 62.44 s | 3.81 s | 16x |
+| `GOSemSim::mgoSim(measure = "Wang")` | 34.91 s | 1.46 s | 24x |
+| `enrichplot::pairwise_termsim(method = "Wang")` | 2.52 s | 0.18 s | 14x |
+| `GOSemSim::godata(ont = "BP", computeIC = TRUE)` | 32.52 s | 7.05 s | 4.6x |
 
 ```r
 library(paradoxR)
@@ -97,13 +96,13 @@ kk <- clusterProfiler::enrichKEGG(genes, organism = "hsa")
 
 | Call | Original | paradoxR | Speed-up |
 |---|---|---|---|
-| `DESeq2::DESeq()`, `~ batch + group`, 8 groups of 3 samples | 26.81 s | 12.81 s | 2.1x |
-| `DESeq2::DESeq()`, `~ batch + group`, 4 groups of 6 samples | 14.05 s | 10.29 s | 1.4x |
-| `DESeq2::DESeq()`, `~ group`, 2 groups of 12 samples | 10.80 s | 9.17 s | 1.2x |
-| `DESeq2::DESeq()`, `~ x`, continuous covariate | 8.52 s | 7.55 s | 1.1x |
-| `sva::ComBat_seq(group = )` | 5.85 s | 3.75 s | 1.6x |
-| `sva::ComBat_seq()`, no group | 4.87 s | 2.73 s | 1.8x |
-| `sva::ComBat_seq(group = , covar_mod = )`, 3 batches | 15.86 s | 10.99 s | 1.4x |
+| `DESeq2::DESeq()`, `~ batch + group`, 8 groups of 3 samples | 16.54 s | 8.47 s | 2x |
+| `DESeq2::DESeq()`, `~ batch + group`, 4 groups of 6 samples | 10.03 s | 6.15 s | 1.6x |
+| `DESeq2::DESeq()`, `~ group`, 2 groups of 12 samples | 7.90 s | 5.89 s | 1.3x |
+| `DESeq2::DESeq()`, `~ x`, continuous covariate | 6.42 s | 5.49 s | 1.2x |
+| `sva::ComBat_seq(group = )` | 4.48 s | 2.50 s | 1.8x |
+| `sva::ComBat_seq()`, no group | 3.62 s | 2.01 s | 1.8x |
+| `sva::ComBat_seq(group = , covar_mod = )`, 3 batches | 8.62 s | 7.67 s | 1.1x |
 
 ## Stored results
 
