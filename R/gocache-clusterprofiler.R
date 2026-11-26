@@ -287,7 +287,7 @@ gocache_revert <- function(patch) {
 #'   in their order, the visibility of the result, option changes, loaded
 #'   packages and the random number state. Only calls that took at least
 #'   2 seconds (`options(paradoxR.result_cache_min_seconds = )`) and at least
-#'   5 times as long as storing their result
+#'   3 times as long as storing their result
 #'   (`options(paradoxR.result_cache_min_ratio = )`) are stored, and
 #'   `options(paradoxR.result_cache = FALSE)` turns this off. Nothing is stored
 #'   when the cache directory is on a network drive or when the `ps` package,

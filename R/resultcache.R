@@ -36,7 +36,7 @@ resultcache_min_seconds <- function() {
 # as hashing its inputs plus writing the result, which is about what a later
 # hit costs.
 resultcache_min_ratio <- function() {
-  getOption("paradoxR.result_cache_min_ratio", 5)
+  getOption("paradoxR.result_cache_min_ratio", 3)
 }
 
 resultcache_make <- function(id) {

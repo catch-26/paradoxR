@@ -1,3 +1,7 @@
+# v26.11.6 (2026-11-26)
+
+- Stored results: calls are now stored when they take at least 3 times as long as storing the result (was 5 times).
+
 # v26.11.5 (2026-11-26)
 
 - Stored results: calls that take 2 seconds or more are stored when they take at least 5 times as long as storing the result (was 10 seconds), so `RunPCA()` and `RunUMAP()` on typical single-cell datasets are reused. Set the limits with `options(paradoxR.result_cache_min_seconds = )` and `options(paradoxR.result_cache_min_ratio = )`.
