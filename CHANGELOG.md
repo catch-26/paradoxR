@@ -1,3 +1,7 @@
+# v26.11.5 (2026-11-26)
+
+- Stored results: calls that take 2 seconds or more are stored when they take at least 5 times as long as storing the result (was 10 seconds), so `RunPCA()` and `RunUMAP()` on typical single-cell datasets are reused. Set the limits with `options(paradoxR.result_cache_min_seconds = )` and `options(paradoxR.result_cache_min_ratio = )`.
+
 # v26.11.4 (2026-11-26)
 
 - Stored results: qs2 is installed with paradoxR, so results are always stored and read in the faster qs2 format.

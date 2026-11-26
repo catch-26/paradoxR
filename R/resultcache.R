@@ -29,7 +29,14 @@ resultcache_load_helpers <- function() {
 }
 
 resultcache_min_seconds <- function() {
-  getOption("paradoxR.result_cache_min_seconds", 10)
+  getOption("paradoxR.result_cache_min_seconds", 2)
+}
+
+# A result is kept only when the call took at least this many times as long
+# as hashing its inputs plus writing the result, which is about what a later
+# hit costs.
+resultcache_min_ratio <- function() {
+  getOption("paradoxR.result_cache_min_ratio", 5)
 }
 
 resultcache_make <- function(id) {
@@ -80,10 +87,12 @@ resultcache_call <- function(id, frame) {
   if (isTRUE(gocache$resultcache_running)) {
     return(finish(withVisible(run())))
   }
+  planned <- proc.time()[["elapsed"]]
   plan <- tryCatch(resultcache_plan(id, spec, original, frame, supplied, has_dots), error = function(e) NULL)
   if (is.null(plan)) {
     return(finish(withVisible(run())))
   }
+  plan$hash_seconds <- proc.time()[["elapsed"]] - planned
   entry <- tryCatch(resultcache_lookup(plan), error = function(e) NULL)
   if (!is.null(entry)) {
     return(finish(withVisible(resultcache_replay(entry))))
@@ -337,11 +346,16 @@ resultcache_record <- function(plan, run) {
   seed_before <- recorded$seed_before
   entry <- resultcache_entry(recorded, rng_dependent = rng_dependent, seeded = isTRUE(plan$seeded))
   try({
-    if (rng_dependent) {
-      resultcache_write(plan$key, list(format = 2L, rng_dependent = TRUE))
-      resultcache_write(resultcache_rng_key(plan$key, seed_before), entry)
-    } else {
-      resultcache_write(plan$key, entry)
+    key <- if (rng_dependent) resultcache_rng_key(plan$key, seed_before) else plan$key
+    started <- proc.time()[["elapsed"]]
+    written <- resultcache_write(key, entry)
+    cost <- (proc.time()[["elapsed"]] - started) + plan$hash_seconds
+    if (isTRUE(written)) {
+      if (recorded$seconds < resultcache_min_ratio() * cost) {
+        unlink(resultcache_path(key))
+      } else if (rng_dependent) {
+        resultcache_write(plan$key, list(format = 2L, rng_dependent = TRUE))
+      }
     }
   }, silent = TRUE)
   if (result$visible) value else invisible(value)

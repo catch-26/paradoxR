@@ -128,6 +128,20 @@ test_that("fast calls are not stored", {
   expect_length(stored_results(), 0L)
 })
 
+test_that("calls not much slower than storing them are not stored", {
+  local_result_cache()
+  withr::local_options(paradoxR.result_cache_min_ratio = 1e6)
+  toy <- local_cached_function(function(x) {
+    Sys.sleep(0.05)
+    x
+  })
+  expect_identical(toy(1), 1)
+  expect_length(stored_results(), 0L)
+  withr::local_options(paradoxR.result_cache_min_ratio = 0)
+  toy(1)
+  expect_length(stored_results(), 1L)
+})
+
 test_that("the cache can be turned off with options", {
   local_result_cache()
   runs <- 0

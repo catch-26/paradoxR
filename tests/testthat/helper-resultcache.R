@@ -3,6 +3,7 @@ local_result_cache <- function(env = parent.frame()) {
   withr::local_options(
     paradoxR.cache_dir = dir,
     paradoxR.result_cache_min_seconds = 0,
+    paradoxR.result_cache_min_ratio = 0,
     paradoxR.cache_min_free_pct = 0,
     paradoxR.cache_min_free_gb = 0,
     .local_envir = env

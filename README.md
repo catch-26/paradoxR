@@ -113,7 +113,7 @@ kk <- clusterProfiler::enrichKEGG(genes, organism = "hsa")
   - ChIP-seq and ATAC-seq: `DiffBind::dba.count()`, `csaw::windowCounts()`, `csaw::regionCounts()`, `GenomicAlignments::summarizeOverlaps()` on BAM files, `ChIPseeker::getTagMatrix()` and `EnrichedHeatmap::normalizeToMatrix()`;
   - bulk RNA-seq and general statistics: `GSVA::gsva()` on a dense matrix, `sva::ComBat_seq()`, `DESeq2::lfcShrink()`, `stats::hclust()` on 5,000 or more objects and `MASS::kde2d()` on large inputs.
 - **When a stored result is used:** only when the argument values, the content of every input file (BAM files and their indexes, fragment files, peak files and annotation databases), the installed versions of the package and everything it depends on, the R build and the relevant options all match. Otherwise the original function runs. Seurat functions are keyed only by the data they read, so adding metadata or another reduction to an object does not count as a change. Functions with their own seed argument, such as `RunUMAP(seed.use = )`, reuse a result whatever the random state before the call. A stored result is replayed exactly as the original call behaved: printed output, progress text, messages and warnings in their original order, whether the result was printed, option changes, the packages the call loaded, and the random number state. Functions whose stock calls leave other traces, such as `ChIPseeker::annotatePeak()` filling its own annotation cache, are not stored.
-- **What is stored:** calls that took at least 10 seconds. Nothing is stored when the cache directory is on a network drive.
+- **What is stored:** calls that took at least 2 seconds and at least 5 times as long as storing their result. Nothing is stored when the cache directory is on a network drive.
 
 ## Speed-up settings
 
@@ -142,7 +142,8 @@ use_speedups("DESeq2")
 | `clear_cache()` | Deletes the GO and KEGG cache and the stored results. |
 | `options(paradoxR.cache_dir = )` | Sets the cache directory, see below. The default is `tools::R_user_dir("paradoxR", "cache")`, the user's local cache folder. |
 | `options(paradoxR.result_cache = FALSE)` | Stops storing and reusing results of slow analysis steps. |
-| `options(paradoxR.result_cache_min_seconds = )` | Stores only calls that took at least this long. The default is 10 seconds. |
+| `options(paradoxR.result_cache_min_seconds = )` | Stores only calls that took at least this long. The default is 2 seconds. |
+| `options(paradoxR.result_cache_min_ratio = )` | Stores only calls that took at least this many times as long as storing their result. The default is 5. |
 | `options(paradoxR.cache_max_age_days = )` | Deletes cached items unused for this many days. The default is 7. Cleanup runs whenever paradoxR or a package it speeds up is loaded or uses the cache, also with the speed-ups off. |
 | `options(paradoxR.cache_min_free_pct = , paradoxR.cache_min_free_gb = )` | Free disk space the cache always leaves: 15% of the disk or 15 GB, whichever is more. The least recently used items are deleted first; if there is still not enough room, the result is returned without being stored. |
 
