@@ -349,7 +349,7 @@ resultcache_record <- function(plan, run) {
     key <- if (rng_dependent) resultcache_rng_key(plan$key, seed_before) else plan$key
     started <- proc.time()[["elapsed"]]
     written <- resultcache_write(key, entry)
-    cost <- (proc.time()[["elapsed"]] - started) + plan$hash_seconds
+    cost <- max((proc.time()[["elapsed"]] - started) + plan$hash_seconds, 0.01)
     if (isTRUE(written)) {
       if (recorded$seconds < resultcache_min_ratio() * cost) {
         unlink(resultcache_path(key))

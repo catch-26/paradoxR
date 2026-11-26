@@ -1,3 +1,7 @@
+# v26.11.8 (2026-11-26)
+
+- Stored results: the storing time is counted as at least 10 ms, so a clock that rounds a fast write down to zero (as on Windows) no longer lets a call pass the `paradoxR.result_cache_min_ratio` check.
+
 # v26.11.7 (2026-11-26)
 
 - Bioconductor 3.24: the faster `clusterProfiler::simplify()`, Wang similarity in `GOSemSim::mgoSim()` and `enrichplot::pairwise_termsim()`, information content in `GOSemSim::godata()` and the SQL GO annotation lookup in `clusterProfiler::enrichGO()` now also apply to clusterProfiler 4.22.0 and GOSemSim 2.40.0. The GO annotation table is stored once per OrgDb and key type and shared by all ontologies.
