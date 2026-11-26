@@ -58,18 +58,17 @@ reset_ggplot2_palette()
 - **Information content:** `GOSemSim::godata()` calculates information content in one vectorised step.
 - **KEGG download cache:** `clusterProfiler::enrichKEGG()`, `clusterProfiler::gseKEGG()`, `clusterProfiler::enrichMKEGG()` and `clusterProfiler::gseMKEGG()` download each KEGG table one time and keep it on disk for all species, key types and sessions. paradoxR compares the cache with the KEGG release dates at most one time each hour and downloads again when KEGG changes. When KEGG is not available, paradoxR uses the cached tables.
 
-**First-call times** in a new R session with an empty cache, original function against paradoxR. The results are identical. Median of 3 runs. Setup: Bioconductor 3.23, R 4.6.2, clusterProfiler 4.20.3, GOSemSim 2.38.3, org.Hs.eg.db, 315 Entrez IDs, 732 BP terms in the `enrichGO()` result. Mouse row: org.Mm.eg.db, 398 Ensembl IDs, 905 BP terms.
+**First-call times** in a new R session with an empty cache, original function against paradoxR. The results are identical. Median of 3 runs. Setup: Bioconductor 3.24, R 4.6.2, clusterProfiler 4.22.0, GOSemSim 2.40.0, org.Hs.eg.db, 320 Entrez IDs, 934 BP terms in the `enrichGO()` result. Mouse row: org.Mm.eg.db, 399 Ensembl IDs, 1,483 BP terms.
 
 | Call | Original | paradoxR | Speed-up |
 |---|---|---|---|
-| `clusterProfiler::enrichGO(ont = "MF")` | 8.88 s | 3.01 s | 3x |
-| `clusterProfiler::enrichGO(ont = "BP")` | 20.74 s | 7.00 s | 3x |
-| `clusterProfiler::enrichGO(ont = "ALL")` | 32.76 s | 9.87 s | 3.3x |
-| `clusterProfiler::enrichGO(ont = "BP", keyType = "ENSEMBL", readable = TRUE)`, org.Mm.eg.db | 28.60 s | 9.75 s | 2.9x |
-| `clusterProfiler::simplify()` | 62.44 s | 3.81 s | 16x |
-| `GOSemSim::mgoSim(measure = "Wang")` | 34.91 s | 1.46 s | 24x |
-| `enrichplot::pairwise_termsim(method = "Wang")` | 2.52 s | 0.18 s | 14x |
-| `GOSemSim::godata(ont = "BP", computeIC = TRUE)` | 32.52 s | 7.05 s | 4.6x |
+| `clusterProfiler::enrichGO(ont = "MF")` | 24.11 s | 9.12 s | 2.6x |
+| `clusterProfiler::enrichGO(ont = "ALL")` | 5.34 s | 2.40 s | 2.2x |
+| `clusterProfiler::enrichGO(ont = "BP", keyType = "ENSEMBL", readable = TRUE)`, org.Mm.eg.db | 30.44 s | 12.20 s | 2.5x |
+| `clusterProfiler::simplify()` | 46.59 s | 4.78 s | 9.7x |
+| `GOSemSim::mgoSim(measure = "Wang")` | 13.14 s | 3.01 s | 4.4x |
+| `enrichplot::pairwise_termsim(method = "Wang")` | 0.50 s | 0.16 s | 3.1x |
+| `GOSemSim::godata(ont = "BP", computeIC = TRUE)` | 22.69 s | 3.55 s | 6.4x |
 
 ```r
 library(paradoxR)
