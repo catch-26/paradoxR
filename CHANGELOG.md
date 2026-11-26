@@ -1,3 +1,7 @@
+# v26.11.4 (2026-11-26)
+
+- Stored results: qs2 is installed with paradoxR, so results are always stored and read in the faster qs2 format.
+
 # v26.11.3 (2026-11-24)
 
 - Stored results: installing paradoxR also updates ps to 1.8.0 or later when an older ps is installed, since older versions cannot measure free disk space and nothing was stored.

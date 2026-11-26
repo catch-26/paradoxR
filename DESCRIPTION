@@ -1,6 +1,6 @@
 Package: paradoxR
 Title: Colour Palettes for 'ggplot2' and Faster 'Bioconductor' Analysis
-Version: 26.11.3
+Version: 26.11.4
 Authors@R: 
     person("catch-26", email = "59668327+catch-26@users.noreply.github.com", role = c("aut", "cre"))
 Description: Provides drop-in replacements for the default colour scales of
@@ -22,6 +22,7 @@ Imports:
     ggplot2 (>= 3.4.0),
     grDevices,
     ps (>= 1.8.0),
+    qs2,
     rlang (>= 1.3.0),
     scales (>= 1.3.0),
     tools,
@@ -47,7 +48,6 @@ Suggests:
     MASS,
     methods,
     org.Hs.eg.db,
-    qs2,
     Rsamtools,
     S4Vectors,
     Seurat,

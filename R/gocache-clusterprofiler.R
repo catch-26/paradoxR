@@ -290,8 +290,7 @@ gocache_revert <- function(patch) {
 #'   (`options(paradoxR.result_cache_min_seconds = )`), and
 #'   `options(paradoxR.result_cache = FALSE)` turns this off. Nothing is stored
 #'   when the cache directory is on a network drive or when the `ps` package,
-#'   which measures free disk space, is not installed. `qs2`, when installed,
-#'   makes storing and reading faster.
+#'   which measures free disk space, is not installed.
 #'
 #' Called automatically when paradoxR is loaded. Packages loaded later are
 #' sped up as they load. The cache is keyed by the clusterProfiler and GO.db

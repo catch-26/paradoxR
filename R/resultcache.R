@@ -22,9 +22,7 @@ resultcache_enabled <- function() {
 resultcache_load_helpers <- function() {
   if (isTRUE(getOption("paradoxR.result_cache", TRUE))) {
     for (pkg in c("ps", "qs2")) {
-      if (nzchar(system.file(package = pkg))) {
-        try(loadNamespace(pkg), silent = TRUE)
-      }
+      try(loadNamespace(pkg), silent = TRUE)
     }
   }
   invisible(NULL)
@@ -236,38 +234,27 @@ resultcache_versions <- function(packages) {
 }
 
 resultcache_path <- function(key) {
-  ext <- if (rlang::is_installed("qs2")) ".qs2" else ".rds"
-  file.path(gocache_dir(), resultcache_subdir, paste0(key, ext))
+  file.path(gocache_dir(), resultcache_subdir, paste0(key, ".qs2"))
 }
 
 resultcache_read <- function(key) {
-  dir <- file.path(gocache_dir(), resultcache_subdir)
-  for (path in file.path(dir, paste0(key, c(".qs2", ".rds")))) {
-    if (!file.exists(path)) {
-      next
-    }
-    drop <- function(condition) {
-      try(unlink(path), silent = TRUE)
-      NULL
-    }
-    if (endsWith(path, ".qs2") && !rlang::is_installed("qs2")) {
-      next
-    }
-    value <- tryCatch(
-      if (endsWith(path, ".qs2")) {
-        qs2::qs_read(path, validate_checksum = TRUE)
-      } else {
-        readRDS(path)
-      },
-      error = drop,
-      warning = drop
-    )
-    if (!is.null(value)) {
-      cache_touch(path)
-      return(value)
-    }
+  path <- resultcache_path(key)
+  if (!file.exists(path)) {
+    return(NULL)
   }
-  NULL
+  drop <- function(condition) {
+    try(unlink(path), silent = TRUE)
+    NULL
+  }
+  value <- tryCatch(
+    qs2::qs_read(path, validate_checksum = TRUE),
+    error = drop,
+    warning = drop
+  )
+  if (!is.null(value)) {
+    cache_touch(path)
+  }
+  value
 }
 
 resultcache_write <- function(key, value) {
@@ -288,11 +275,7 @@ resultcache_write <- function(key, value) {
       stop("not enough free disk space")
     }
     tmp <- tempfile("result-", tmpdir = dir, fileext = ".tmp")
-    if (endsWith(path, ".qs2")) {
-      qs2::qs_save(value, tmp)
-    } else {
-      saveRDS(value, tmp, compress = FALSE)
-    }
+    qs2::qs_save(value, tmp)
     gocache_move(tmp, cache_pin(path))
   }, error = function(e) FALSE, warning = function(w) FALSE)
   if (!isTRUE(ok)) {

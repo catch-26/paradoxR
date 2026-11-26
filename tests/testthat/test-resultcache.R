@@ -387,7 +387,7 @@ test_that("packages loaded during the original call are loaded again on a hit", 
     x
   })
   toy(1)
-  key <- sub("[.](qs2|rds)$", "", stored_results())
+  key <- sub("[.]qs2$", "",stored_results())
   expect_true(pkg %in% resultcache_read(key)$namespaces)
   unloadNamespace(pkg)
   expect_false(pkg %in% loadedNamespaces())

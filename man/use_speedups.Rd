@@ -77,8 +77,7 @@ that took at least 10 seconds are stored
 (\code{options(paradoxR.result_cache_min_seconds = )}), and
 \code{options(paradoxR.result_cache = FALSE)} turns this off. Nothing is stored
 when the cache directory is on a network drive or when the \code{ps} package,
-which measures free disk space, is not installed. \code{qs2}, when installed,
-makes storing and reading faster.
+which measures free disk space, is not installed.
 }
 
 Called automatically when paradoxR is loaded. Packages loaded later are
