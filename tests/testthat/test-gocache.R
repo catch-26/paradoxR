@@ -31,8 +31,10 @@ test_that("enrichGO() returns the same result with and without the cache", {
   }
   use_speedups()
   expect_true(gocache_patched())
+  original <- gocache_original("clusterProfiler", "get_GO_data")
+  sql_port <- compat_port_applies("bioc322-getgodata-sql", original) || compat_port_applies("bioc323-getgodata-sql", original)
   cached <- run()
-  expect_true(length(list.files(dir, pattern = "^go-data-")) == 1L)
+  expect_length(list.files(dir, pattern = "^go-data-"), if (sql_port) 1L else 0L)
   expect_length(list.files(dir, pattern = "^go-result-"), 0L)
   expect_identical(run()@result, cached@result)
   gocache$memory_data <- list()
